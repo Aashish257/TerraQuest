@@ -23,6 +23,8 @@ import { errorHandler } from './middleware/errorHandler';
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
 import destinationRoutes from './routes/destination.routes';
+import tripRoutes from './routes/trip.routes';
+import aiRoutes from './routes/ai.routes';
 
 const app = express();
 
@@ -60,10 +62,12 @@ app.get('/health', (_req: Request, res: Response) => {
 });
 
 // ─── API Routes ──────────────────────────────────────────────────────────────
-// Auth, User, and Destination routes
+// Auth, User, Destination, Trip, and AI routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/destinations', destinationRoutes);
+app.use('/api/trips', tripRoutes);
+app.use('/api/ai', aiRoutes);
 
 // Base API route information
 app.get('/api', (_req: Request, res: Response) => {
@@ -74,6 +78,8 @@ app.get('/api', (_req: Request, res: Response) => {
       auth: '/api/auth',
       users: '/api/users',
       destinations: '/api/destinations',
+      trips: '/api/trips',
+      ai: '/api/ai',
     },
   });
 });

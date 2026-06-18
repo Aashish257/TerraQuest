@@ -8,9 +8,9 @@
  * Posts data to backend POST /trips, redirecting to the list view on success.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -41,8 +41,14 @@ const tripFormSchema = z
 
 type TripFormValues = z.infer<typeof tripFormSchema>;
 
-export default function CreateTripPage() {
+function CreateTripForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const queryDestinationId = searchParams.get('destinationId') || '';
+  const queryBudget = searchParams.get('budget') || '';
+  const queryDuration = searchParams.get('duration') || '';
+  const queryTitle = searchParams.get('title') || '';
+
   const { isAuthenticated, initialize, isLoading: authLoading } = useAuthStore();
   const [destinations, setDestinations] = useState<SimpleDestination[]>([]);
   const [destLoading, setDestLoading] = useState(true);
@@ -76,6 +82,7 @@ export default function CreateTripPage() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<TripFormValues>({
     resolver: zodResolver(tripFormSchema),
@@ -88,6 +95,37 @@ export default function CreateTripPage() {
       budget: 10000,
     },
   });
+
+  // Prefill fields from URL query params
+  useEffect(() => {
+    if (queryTitle) {
+      setValue('title', queryTitle);
+    }
+    if (queryDestinationId) {
+      setValue('destinationId', queryDestinationId);
+    }
+    if (queryBudget) {
+      const parsedBudget = Number(queryBudget);
+      if (!isNaN(parsedBudget) && parsedBudget > 0) {
+        setValue('budget', parsedBudget);
+      }
+    }
+    
+    // Automatically prefill start date to today and calculate end date from duration
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    setValue('startDate', todayStr);
+
+    if (queryDuration) {
+      const numDays = Number(queryDuration);
+      if (!isNaN(numDays) && numDays > 0) {
+        const endDateObj = new Date();
+        endDateObj.setDate(today.getDate() + numDays);
+        const endDateStr = endDateObj.toISOString().split('T')[0];
+        setValue('endDate', endDateStr);
+      }
+    }
+  }, [queryTitle, queryDestinationId, queryBudget, queryDuration, setValue]);
 
   // Guard routing
   useEffect(() => {
@@ -293,5 +331,20 @@ export default function CreateTripPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function CreateTripPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex-grow flex flex-col justify-center items-center py-20 bg-slate-950">
+          <Loader2 className="h-10 w-10 text-teal-500 animate-spin" />
+          <p className="mt-4 text-sm text-slate-500">Loading form...</p>
+        </div>
+      }
+    >
+      <CreateTripForm />
+    </Suspense>
   );
 }
