@@ -22,6 +22,7 @@ import { env } from './config/env';
 import { errorHandler } from './middleware/errorHandler';
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
+import destinationRoutes from './routes/destination.routes';
 
 const app = express();
 
@@ -59,9 +60,10 @@ app.get('/health', (_req: Request, res: Response) => {
 });
 
 // ─── API Routes ──────────────────────────────────────────────────────────────
-// Auth & User routes
+// Auth, User, and Destination routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/destinations', destinationRoutes);
 
 // Base API route information
 app.get('/api', (_req: Request, res: Response) => {
@@ -71,6 +73,7 @@ app.get('/api', (_req: Request, res: Response) => {
     endpoints: {
       auth: '/api/auth',
       users: '/api/users',
+      destinations: '/api/destinations',
     },
   });
 });
