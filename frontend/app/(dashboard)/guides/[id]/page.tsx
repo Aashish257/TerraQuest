@@ -1,11 +1,10 @@
 'use client';
 
 /**
- * [id]/page.tsx — Destination Detail Screen
+ * [id]/page.tsx — Guide Detail Profile Screen
  *
- * Displays details for a single selected destination.
- * Shows description, activities tags, travel season, budget range, and images.
- * Provides a call-to-action linking directly to the AI Travel Planner.
+ * Displays detailed information about a selected local guide.
+ * Shows bio, location, languages, years of experience, and expertise tags.
  * Integrates an interactive reviews panel for reading and posting ratings/comments.
  */
 
@@ -13,7 +12,6 @@ import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
-import { Destination } from '@/components/shared/DestinationCard';
 import { useAuthStore } from '@/store/authStore';
 import {
   Compass,
@@ -23,14 +21,36 @@ import {
   ArrowLeft,
   Loader2,
   AlertCircle,
-  TrendingUp,
   Star,
+  Globe,
+  Award,
+  Mail,
+  MessageSquare,
 } from 'lucide-react';
 
-interface DestinationDetailProps {
+interface GuideDetailProps {
   params: {
     id: string;
   };
+}
+
+interface Guide {
+  _id: string;
+  userId: {
+    _id: string;
+    name: string;
+    email: string;
+    avatar?: string;
+    bio?: string;
+  };
+  experience: number;
+  languages: string[];
+  expertise: string[];
+  location: string;
+  bio: string;
+  rating: number;
+  totalReviews: number;
+  createdAt: string;
 }
 
 interface Review {
@@ -47,18 +67,18 @@ interface Review {
   createdAt: string;
 }
 
-export default function DestinationDetailPage({ params }: DestinationDetailProps) {
+export default function GuideDetailPage({ params }: GuideDetailProps) {
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
-  
-  const [destination, setDestination] = useState<Destination | null>(null);
+
+  const [guide, setGuide] = useState<Guide | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Reviews states
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isReviewsLoading, setIsReviewsLoading] = useState(true);
-  
+
   // Review form states
   const [formRating, setFormRating] = useState(5);
   const [formComment, setFormComment] = useState('');
@@ -70,13 +90,13 @@ export default function DestinationDetailPage({ params }: DestinationDetailProps
     setIsLoading(true);
     setErrorMsg(null);
     try {
-      const res = await api.get(`/destinations/${params.id}`);
+      const res = await api.get(`/guides/${params.id}`);
       if (res.data.success) {
-        setDestination(res.data.destination);
+        setGuide(res.data.guide);
       }
     } catch (err: any) {
-      console.error('Error fetching destination details:', err);
-      const msg = err.response?.data?.message || 'Could not retrieve destination details.';
+      console.error('Error fetching guide details:', err);
+      const msg = err.response?.data?.message || 'Could not retrieve guide profile details.';
       setErrorMsg(msg);
     } finally {
       setIsLoading(false);
@@ -86,7 +106,7 @@ export default function DestinationDetailPage({ params }: DestinationDetailProps
   const fetchReviews = useCallback(async () => {
     setIsReviewsLoading(true);
     try {
-      const res = await api.get(`/reviews?targetId=${params.id}&targetType=destination`);
+      const res = await api.get(`/reviews?targetId=${params.id}&targetType=guide`);
       if (res.data.success) {
         setReviews(res.data.reviews);
       }
@@ -114,7 +134,7 @@ export default function DestinationDetailPage({ params }: DestinationDetailProps
     try {
       const res = await api.post('/reviews', {
         targetId: params.id,
-        targetType: 'destination',
+        targetType: 'guide',
         rating: formRating,
         comment: formComment,
       });
@@ -122,7 +142,8 @@ export default function DestinationDetailPage({ params }: DestinationDetailProps
         setSubmitSuccess(true);
         setFormComment('');
         setFormRating(5);
-        fetchReviews(); // Refresh review list
+        fetchReviews(); // Refresh reviews list
+        fetchDetail();  // Refresh guide details for aggregated rating
       }
     } catch (err: any) {
       console.error('Error submitting review:', err);
@@ -136,23 +157,23 @@ export default function DestinationDetailPage({ params }: DestinationDetailProps
     return (
       <div className="flex-grow flex flex-col justify-center items-center py-20 bg-slate-950">
         <Loader2 className="h-10 w-10 text-teal-500 animate-spin" />
-        <p className="mt-4 text-sm text-slate-500">Loading details...</p>
+        <p className="mt-4 text-sm text-slate-500">Loading guide profile...</p>
       </div>
     );
   }
 
-  if (errorMsg || !destination) {
+  if (errorMsg || !guide) {
     return (
       <div className="flex-grow flex flex-col justify-center items-center py-20 bg-slate-950 text-center px-4">
         <AlertCircle className="h-12 w-12 text-rose-500" />
-        <h3 className="mt-4 text-lg font-bold text-white">Destination Not Found</h3>
-        <p className="mt-2 text-sm text-slate-400 max-w-sm">{errorMsg || 'The requested destination details could not be found.'}</p>
+        <h3 className="mt-4 text-lg font-bold text-white">Profile Not Found</h3>
+        <p className="mt-2 text-sm text-slate-400 max-w-sm">{errorMsg || 'The requested guide profile could not be found.'}</p>
         <Link
-          href="/destinations"
+          href="/guides"
           className="mt-6 flex items-center space-x-1.5 rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-800 transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span>Back to Explore</span>
+          <span>Back to Guides</span>
         </Link>
       </div>
     );
@@ -164,67 +185,118 @@ export default function DestinationDetailPage({ params }: DestinationDetailProps
       {/* Back navigation */}
       <div className="mb-6">
         <Link
-          href="/destinations"
+          href="/guides"
           className="inline-flex items-center space-x-1.5 text-sm font-semibold text-slate-400 hover:text-white transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span>Back to Explore</span>
+          <span>Back to Guides</span>
         </Link>
       </div>
 
-      {/* Main Grid: Detail and Sidebar */}
+      {/* Main Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        {/* Detail Panel */}
-        <div className="lg:col-span-2 space-y-6">
+        {/* Left Column: Guide Information & Contact */}
+        <div className="space-y-6">
           
-          {/* Header information */}
-          <div>
-            <div className="flex items-center space-x-2">
-              <span className="flex items-center space-x-1 text-xs font-bold text-teal-400 uppercase tracking-wider">
-                <MapPin className="h-3.5 w-3.5" />
-                <span>
-                  {destination.state ? `${destination.state}, ` : ''}
-                  {destination.country}
-                </span>
-              </span>
-              {destination.featured && (
-                <span className="flex items-center space-x-1 rounded-full bg-teal-500/10 border border-teal-500/20 px-2 py-0.5 text-[10px] font-bold text-teal-400">
-                  <Sparkles className="h-2.5 w-2.5" />
-                  <span>Featured</span>
-                </span>
-              )}
+          {/* Guide Header Card */}
+          <div className="rounded-2xl border border-white/5 bg-slate-900/40 p-6 shadow-2xl backdrop-blur-md text-center">
+            
+            {/* Avatar block */}
+            <div className="mx-auto h-24 w-24 rounded-full bg-gradient-to-br from-teal-500 to-indigo-600 flex items-center justify-center text-4xl font-bold text-white shadow-lg mb-4">
+              {guide.userId.name.charAt(0)}
             </div>
 
-            <h1 className="mt-3 text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
-              {destination.name}
-            </h1>
+            <h1 className="text-2xl font-bold text-white tracking-tight">{guide.userId.name}</h1>
+            
+            <div className="flex items-center justify-center space-x-1 mt-1 text-sm text-slate-400">
+              <MapPin className="h-4 w-4 text-teal-500" />
+              <span>{guide.location}</span>
+            </div>
+
+            {/* Rating stats */}
+            <div className="flex items-center justify-center space-x-1.5 mt-3">
+              <div className="flex items-center space-x-1 rounded-full bg-amber-500/10 border border-amber-500/20 px-3 py-1 text-sm font-bold text-amber-400">
+                <Star className="h-4 w-4 fill-amber-400" />
+                <span>{guide.rating > 0 ? guide.rating.toFixed(1) : 'New'}</span>
+              </div>
+              <span className="text-xs text-slate-500">
+                ({guide.totalReviews} {guide.totalReviews === 1 ? 'review' : 'reviews'})
+              </span>
+            </div>
+
+            {/* Contact details */}
+            <div className="mt-6 pt-6 border-t border-white/5 space-y-3.5 text-left">
+              <div className="flex items-center space-x-3 text-slate-300">
+                <Mail className="h-4 w-4 text-teal-400" />
+                <span className="text-xs font-semibold select-all">{guide.userId.email}</span>
+              </div>
+              <div className="flex items-center space-x-3 text-slate-300">
+                <Calendar className="h-4 w-4 text-indigo-400" />
+                <span className="text-xs font-semibold">Registered since {new Date(guide.createdAt).getFullYear()}</span>
+              </div>
+            </div>
+
+            {/* Direct Contact CTA */}
+            <a
+              href={`mailto:${guide.userId.email}?subject=TerraQuest Travel Inquiry`}
+              className="mt-6 flex w-full items-center justify-center space-x-2 rounded-xl bg-gradient-to-r from-teal-500 to-indigo-600 py-2.5 text-sm font-semibold text-white hover:from-teal-400 hover:to-indigo-500 shadow-lg shadow-teal-500/10 transition-all"
+            >
+              <Mail className="h-4 w-4" />
+              <span>Hire Guide</span>
+            </a>
           </div>
 
-          {/* Large image placeholder */}
-          <div className="relative h-96 w-full rounded-2xl border border-white/5 bg-gradient-to-br from-slate-900 to-indigo-950/40 flex items-center justify-center overflow-hidden shadow-2xl">
-            <Compass className="h-20 w-20 text-slate-800" />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-80" />
+          {/* Quick Facts Panel */}
+          <div className="rounded-2xl border border-white/5 bg-slate-900/40 p-6 shadow-2xl backdrop-blur-md">
+            <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4 border-b border-white/5 pb-2">Credentials</h3>
+            
+            <div className="space-y-4">
+              <div className="flex items-start space-x-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                  <Award className="h-4 w-4" />
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Experience</span>
+                  <span className="text-xs font-semibold text-slate-300 mt-0.5 block">{guide.experience} Years Active</span>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                  <Globe className="h-4 w-4" />
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Languages spoken</span>
+                  <span className="text-xs font-semibold text-slate-300 mt-0.5 block">{guide.languages.join(', ')}</span>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Description */}
+        </div>
+
+        {/* Right Column: Bio, Expertise & Reviews */}
+        <div className="lg:col-span-2 space-y-6">
+          
+          {/* Biography */}
           <div className="bg-slate-900/20 border border-white/5 p-6 rounded-2xl backdrop-blur-md">
-            <h2 className="text-xl font-bold text-white mb-4">About this Spot</h2>
+            <h2 className="text-xl font-bold text-white mb-4">About Me</h2>
             <p className="text-slate-300 leading-relaxed text-sm whitespace-pre-line">
-              {destination.description}
+              {guide.bio || `Hello! My name is ${guide.userId.name}. I am a professional local guide specialized in revealing the cultural secrets and natural wonders of ${guide.location}. Contact me to design a custom off-beat tour.`}
             </p>
           </div>
 
-          {/* Activities List */}
+          {/* Area of Expertise */}
           <div className="bg-slate-900/20 border border-white/5 p-6 rounded-2xl backdrop-blur-md">
-            <h2 className="text-xl font-bold text-white mb-4">Activities & Experiences</h2>
+            <h2 className="text-xl font-bold text-white mb-4">Areas of Expertise</h2>
             <div className="flex flex-wrap gap-2">
-              {destination.activities.map((act, idx) => (
+              {guide.expertise.map((exp, idx) => (
                 <span
                   key={idx}
-                  className="rounded-full bg-teal-500/10 border border-teal-500/25 px-4 py-1.5 text-xs font-semibold text-teal-400"
+                  className="rounded-full bg-indigo-500/10 border border-indigo-500/25 px-4 py-1.5 text-xs font-semibold text-indigo-400"
                 >
-                  {act}
+                  {exp}
                 </span>
               ))}
             </div>
@@ -233,7 +305,7 @@ export default function DestinationDetailPage({ params }: DestinationDetailProps
           {/* Reviews Panel */}
           <div className="bg-slate-900/20 border border-white/5 p-6 rounded-2xl backdrop-blur-md space-y-6">
             <div className="flex items-center justify-between border-b border-white/5 pb-4">
-              <h2 className="text-xl font-bold text-white">Reviews & Feedback</h2>
+              <h2 className="text-xl font-bold text-white">Client Reviews & Endorsements</h2>
               <span className="text-xs text-slate-400 font-semibold bg-slate-800 border border-white/5 px-2.5 py-1 rounded-full">
                 {reviews.length} {reviews.length === 1 ? 'Review' : 'Reviews'}
               </span>
@@ -245,7 +317,7 @@ export default function DestinationDetailPage({ params }: DestinationDetailProps
                 <Loader2 className="h-6 w-6 text-teal-500 animate-spin" />
               </div>
             ) : reviews.length === 0 ? (
-              <p className="text-slate-400 text-sm py-4 text-center">No reviews yet. Be the first to share your experience!</p>
+              <p className="text-slate-400 text-sm py-4 text-center">No reviews yet for {guide.userId.name}. Be the first to share your tour experience!</p>
             ) : (
               <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                 {reviews.map((rev) => (
@@ -291,7 +363,7 @@ export default function DestinationDetailPage({ params }: DestinationDetailProps
 
             {/* Post Review Form */}
             <div className="border-t border-white/5 pt-6">
-              <h3 className="text-lg font-bold text-white mb-4">Leave a Review</h3>
+              <h3 className="text-lg font-bold text-white mb-4">Rate this Guide</h3>
               {isAuthenticated ? (
                 <form onSubmit={handleSubmitReview} className="space-y-4">
                   {submitError && (
@@ -304,7 +376,7 @@ export default function DestinationDetailPage({ params }: DestinationDetailProps
                   {submitSuccess && (
                     <div className="flex items-center space-x-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-3 text-xs text-emerald-400">
                       <Sparkles className="h-4 w-4 flex-shrink-0" />
-                      <span>Thank you! Your review has been submitted successfully.</span>
+                      <span>Thank you! Your feedback has been recorded successfully.</span>
                     </div>
                   )}
 
@@ -338,7 +410,7 @@ export default function DestinationDetailPage({ params }: DestinationDetailProps
 
                   <div>
                     <label htmlFor="comment" className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                      Review Comment (Min 10 characters)
+                      Tour Review Comment (Min 10 characters)
                     </label>
                     <textarea
                       id="comment"
@@ -348,7 +420,7 @@ export default function DestinationDetailPage({ params }: DestinationDetailProps
                         setSubmitSuccess(false);
                       }}
                       rows={3}
-                      placeholder="Share your thoughts about this destination..."
+                      placeholder="Describe your tour experience with this guide..."
                       className="w-full rounded-xl border border-white/5 bg-slate-950/60 p-3 text-sm text-slate-200 placeholder-slate-600 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
                     />
                   </div>
@@ -372,7 +444,7 @@ export default function DestinationDetailPage({ params }: DestinationDetailProps
                 </form>
               ) : (
                 <div className="rounded-xl border border-dashed border-white/10 bg-slate-950/20 p-6 text-center">
-                  <p className="text-sm text-slate-400">You must be logged in to share a review.</p>
+                  <p className="text-sm text-slate-400">You must be logged in to rate a guide.</p>
                   <Link
                     href="/login"
                     className="mt-3 inline-block rounded-lg bg-slate-800 border border-white/5 px-4 py-1.5 text-xs font-semibold text-slate-200 hover:bg-slate-700 transition-colors"
@@ -382,65 +454,6 @@ export default function DestinationDetailPage({ params }: DestinationDetailProps
                 </div>
               )}
             </div>
-          </div>
-
-        </div>
-
-        {/* Sidebar Info & Action Panel */}
-        <div className="space-y-6">
-          
-          {/* Quick Facts Card */}
-          <div className="rounded-2xl border border-white/5 bg-slate-900/40 p-6 shadow-2xl backdrop-blur-md">
-            <h3 className="text-lg font-bold text-white mb-6">Quick Travel Facts</h3>
-            
-            <div className="space-y-6">
-              
-              {/* Season */}
-              <div className="flex items-start space-x-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
-                  <Calendar className="h-4 w-4" />
-                </div>
-                <div>
-                  <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Best Season</span>
-                  <span className="text-sm font-semibold text-slate-200 mt-0.5 block">
-                    {destination.bestTimeToVisit || 'All year round'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Budget */}
-              <div className="flex items-start space-x-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                  <TrendingUp className="h-4 w-4" />
-                </div>
-                <div>
-                  <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Est. Budget Range</span>
-                  <span className="text-sm font-semibold text-slate-200 mt-0.5 block">
-                    {destination.budgetRange || 'Flexible'}
-                  </span>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          {/* AI Planner Promotion CTA Card */}
-          <div className="rounded-2xl border border-teal-500/15 bg-gradient-to-br from-slate-900 to-indigo-950/20 p-6 shadow-2xl backdrop-blur-md text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-teal-500/10 text-teal-400 border border-teal-500/25">
-              <Sparkles className="h-5 w-5" />
-            </div>
-            
-            <h3 className="mt-4 text-lg font-bold text-white">Generate AI Itinerary</h3>
-            <p className="mt-2 text-xs leading-relaxed text-slate-400">
-              Instantly draft a structured daily schedule, accommodation ideas, and budget breakdown for {destination.name} using GPT.
-            </p>
-
-            <Link
-              href={`/ai-planner?destinationId=${destination._id}&destinationName=${encodeURIComponent(destination.name)}`}
-              className="mt-6 flex w-full items-center justify-center rounded-lg bg-gradient-to-r from-teal-500 to-indigo-600 py-2.5 text-sm font-semibold text-white hover:from-teal-400 hover:to-indigo-500 shadow-lg shadow-teal-500/10 transition-all"
-            >
-              <span>Build Plan with AI</span>
-            </Link>
           </div>
 
         </div>

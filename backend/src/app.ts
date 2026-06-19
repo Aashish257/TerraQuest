@@ -25,6 +25,9 @@ import userRoutes from './routes/user.routes';
 import destinationRoutes from './routes/destination.routes';
 import tripRoutes from './routes/trip.routes';
 import aiRoutes from './routes/ai.routes';
+import reviewRoutes from './routes/review.routes';
+import guideRoutes from './routes/guide.routes';
+
 
 const app = express();
 
@@ -68,6 +71,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/destinations', destinationRoutes);
 app.use('/api/trips', tripRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/guides', guideRoutes);
 
 // Base API route information
 app.get('/api', (_req: Request, res: Response) => {
@@ -80,6 +85,8 @@ app.get('/api', (_req: Request, res: Response) => {
       destinations: '/api/destinations',
       trips: '/api/trips',
       ai: '/api/ai',
+      reviews: '/api/reviews',
+      guides: '/api/guides',
     },
   });
 });

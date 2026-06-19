@@ -32,6 +32,7 @@ export default function Header() {
 
   const navLinks = [
     { href: '/destinations', label: 'Explore', icon: Compass },
+    { href: '/guides', label: 'Local Guides', icon: User },
     { href: '/trips', label: 'My Trips', icon: Calendar },
     { href: '/ai-planner', label: 'AI Planner', icon: Sparkles },
   ];
