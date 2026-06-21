@@ -7,12 +7,12 @@
  * Below is the reference implementation for when it is reintroduced.
  */
 
-/*
 import rateLimit from 'express-rate-limit';
+import { env } from '../config/env';
 
 export const authRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Limit each IP to 10 requests per window
+  max: env.NODE_ENV === 'test' ? 1000 : 10, // Higher threshold for testing integrity
   message: { 
     success: false, 
     message: 'Too many requests, try again later' 
@@ -20,11 +20,3 @@ export const authRateLimiter = rateLimit({
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
-*/
-
-import { Request, Response, NextFunction } from 'express';
-
-// Temporary placeholder middleware that passes through
-export const authRateLimiter = (req: Request, res: Response, next: NextFunction) => {
-  next();
-};

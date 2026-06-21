@@ -22,6 +22,8 @@ export interface ITrip extends Document {
   startDate: Date;
   endDate: Date;
   budget: number;
+  totalSpent: number;
+  guideId?: mongoose.Types.ObjectId;
   status: 'planning' | 'ongoing' | 'completed' | 'cancelled';
   createdAt: Date;
   updatedAt: Date;
@@ -66,6 +68,15 @@ const TripSchema = new Schema<ITrip>(
       required: [true, 'budget is required'],
       min: [0, 'Budget cannot be negative'],
     },
+    totalSpent: {
+      type: Number,
+      default: 0,
+      min: [0, 'Total spent cannot be negative'],
+    },
+    guideId: {
+      type: Schema.Types.ObjectId,
+      ref: 'GuideProfile',
+    },
     status: {
       type: String,
       enum: {
@@ -92,6 +103,7 @@ TripSchema.pre('save', function (next) {
 TripSchema.index({ ownerId: 1 });       // fetch all trips by a user
 TripSchema.index({ destinationId: 1 }); // fetch all trips to a destination
 TripSchema.index({ tripType: 1 });      // filter solo vs group trips
+TripSchema.index({ guideId: 1 });       // query trips assigned to a guide
 
 
 

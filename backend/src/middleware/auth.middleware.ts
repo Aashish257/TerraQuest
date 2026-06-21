@@ -24,17 +24,24 @@ export const authenticate = async (
   res: Response,
   next: NextFunction
 ) => {
-  const authHeader = req.headers.authorization;
+  console.log('--- AUTHENTICATING ROUTE ---', req.method, req.url);
+  console.log('HEADERS:', req.headers);
+  console.log('COOKIES:', req.cookies);
+  let token = req.cookies?.accessToken || req.cookies?.token;
 
-  // Verify the header structure is 'Bearer <JWT>'
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (!token) {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    }
+  }
+
+  if (!token) {
     return res.status(401).json({
       success: false,
       message: 'Authentication failed: No token provided',
     });
   }
-
-  const token = authHeader.split(' ')[1];
 
   try {
     // Decode and verify token
@@ -67,6 +74,7 @@ export const authenticate = async (
 
     next();
   } catch (err) {
+    console.error('JWT AUTH MIDDLEWARE ERROR:', err, 'Token:', token);
     return res.status(401).json({
       success: false,
       message: 'Authentication failed: Invalid or expired token',

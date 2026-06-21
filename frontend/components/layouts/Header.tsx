@@ -3,9 +3,9 @@
 /**
  * Header.tsx — App Navigation Header
  *
- * Glassmorphic navigation header.
- * Shows links to Explore, Trips, and AI Planner.
- * Shows Auth CTA buttons depending on user authentication status.
+ * Glassmorphic navigation header for public/traveler pages.
+ * Hidden entirely on /guide/* and /admin/* routes (those use their own sidebar layouts).
+ * Shows role-appropriate nav links for authenticated traveler users.
  */
 
 import { useEffect, useState } from 'react';
@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { Compass, Calendar, Sparkles, LogOut, User, Menu, X } from 'lucide-react';
+
 
 export default function Header() {
   const pathname = usePathname();
@@ -25,16 +26,31 @@ export default function Header() {
     initialize();
   }, [initialize]);
 
+  // Hide header entirely on guide/admin workspace pages — those layouts handle their own navigation
+  if (pathname.startsWith('/guide/') || pathname.startsWith('/admin/')) {
+    return null;
+  }
+
   const handleLogout = () => {
     logout();
     router.push('/');
   };
 
-  const navLinks = [
+  // Traveler-only nav links
+  const travelerNav = [
     { href: '/destinations', label: 'Explore', icon: Compass },
     { href: '/trips', label: 'My Trips', icon: Calendar },
     { href: '/ai-planner', label: 'AI Planner', icon: Sparkles },
+    { href: '/guides', label: 'Local Guides', icon: User },
   ];
+
+  // What nav links to show depends on role
+  const navLinks = isAuthenticated && user
+    ? user.role === 'traveler'
+      ? travelerNav
+      : travelerNav.slice(0, 3) // guides/admins visiting public pages see minimal nav
+    : travelerNav.slice(0, 3);
+
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-slate-950/80 backdrop-blur-md">
@@ -51,7 +67,7 @@ export default function Header() {
         <nav className="hidden md:flex items-center space-x-8">
           {navLinks.map((link) => {
             const Icon = link.icon;
-            const isActive = pathname === link.href;
+            const isActive = pathname === link.href || pathname.startsWith(link.href + '/');
             return (
               <Link
                 key={link.href}
@@ -78,7 +94,7 @@ export default function Header() {
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-teal-400 to-indigo-500 text-white font-bold uppercase ring-2 ring-white/10">
                   {user.name.charAt(0)}
                 </div>
-                <span>{user.name}</span>
+                <span>{user.name.split(' ')[0]}</span>
               </Link>
               <button
                 onClick={handleLogout}

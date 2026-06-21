@@ -12,6 +12,7 @@
 
 import mongoose from 'mongoose';
 import { env } from './env';
+import { logger } from '../utils/logger';
 
 export const connectDB = async (): Promise<void> => {
   try {
@@ -22,18 +23,18 @@ export const connectDB = async (): Promise<void> => {
       bufferCommands: false,
     });
 
-    console.log(`✅ MongoDB connected: ${conn.connection.host}`);
+    logger.info(`MongoDB connected: ${conn.connection.host}`);
 
     // Listen for connection events (useful during development)
     mongoose.connection.on('disconnected', () => {
-      console.warn('⚠️  MongoDB disconnected');
+      logger.warn('MongoDB disconnected');
     });
 
     mongoose.connection.on('error', (err) => {
-      console.error('❌ MongoDB connection error:', err);
+      logger.error({ err }, 'MongoDB connection error');
     });
   } catch (error) {
-    console.error('❌ Failed to connect to MongoDB:', error);
+    logger.error({ err: error }, 'Failed to connect to MongoDB');
     // Exit with failure code — let the process manager (PM2/Railway) restart
     process.exit(1);
   }
@@ -45,5 +46,5 @@ export const connectDB = async (): Promise<void> => {
  */
 export const disconnectDB = async (): Promise<void> => {
   await mongoose.disconnect();
-  console.log('🔌 MongoDB disconnected gracefully');
+  logger.info('MongoDB disconnected gracefully');
 };

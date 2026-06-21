@@ -12,12 +12,13 @@ import { register, login, logout } from '../controllers/auth.controller';
 import { validate } from '../middleware/validate.middleware';
 import { registerSchema, loginSchema } from '../validators/auth.validator';
 import { authenticate } from '../middleware/auth.middleware';
+import { authRateLimiter } from '../middleware/rateLimiter';
 
 const router = Router();
 
 // Public routes
-router.post('/register', validate(registerSchema), register);
-router.post('/login', validate(loginSchema), login);
+router.post('/register', authRateLimiter, validate(registerSchema), register);
+router.post('/login', authRateLimiter, validate(loginSchema), login);
 
 // Protected routes
 router.post('/logout', authenticate, logout);

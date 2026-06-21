@@ -10,6 +10,15 @@
 import { Request, Response, NextFunction } from 'express';
 import * as authService from '../services/auth.service';
 
+const setTokenCookie = (res: Response, token: string) => {
+  res.cookie('accessToken', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days (or matching expiration)
+  });
+};
+
 export const register = async (
   req: Request,
   res: Response,
@@ -17,6 +26,7 @@ export const register = async (
 ) => {
   try {
     const result = await authService.registerUser(req.body);
+    setTokenCookie(res, result.token);
     res.status(201).json({
       success: true,
       ...result,
@@ -33,6 +43,7 @@ export const login = async (
 ) => {
   try {
     const result = await authService.loginUser(req.body);
+    setTokenCookie(res, result.token);
     res.status(200).json({
       success: true,
       ...result,
@@ -48,8 +59,16 @@ export const logout = async (
   next: NextFunction
 ) => {
   try {
-    // Stateless JWT: logout is handled on client by deleting the token.
-    // Server simply confirms with 200 OK.
+    res.clearCookie('accessToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+    });
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+    });
     res.status(200).json({
       success: true,
       message: 'Logged out successfully',

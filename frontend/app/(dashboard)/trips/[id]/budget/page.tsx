@@ -87,20 +87,19 @@ export default function BudgetTrackerPage() {
     setIsLoading(true);
     setErrorMsg(null);
     try {
-      // 1. Fetch Trip details
-      const tripRes = await api.get(`/trips/${tripId}`);
+      // Fetch Trip details, budget entries, and budget summary in parallel
+      const [tripRes, entriesRes, summaryRes] = await Promise.all([
+        api.get(`/trips/${tripId}`),
+        api.get(`/trips/${tripId}/budget-entries`),
+        api.get(`/trips/${tripId}/budget-summary`),
+      ]);
+
       if (tripRes.data.success) {
         setTrip(tripRes.data.trip);
       }
-
-      // 2. Fetch Budget entries
-      const entriesRes = await api.get(`/trips/${tripId}/budget-entries`);
       if (entriesRes.data.success) {
         setEntries(entriesRes.data.entries);
       }
-
-      // 3. Fetch Budget summary
-      const summaryRes = await api.get(`/trips/${tripId}/budget-summary`);
       if (summaryRes.data.success) {
         setSummary(summaryRes.data.summary);
       }
@@ -151,11 +150,17 @@ export default function BudgetTrackerPage() {
         setAmount('');
         setDescription('');
         
-        // Reload budget lists and summary calculation
-        const entriesRes = await api.get(`/trips/${tripId}/budget-entries`);
-        const summaryRes = await api.get(`/trips/${tripId}/budget-summary`);
-        if (entriesRes.data.success) setEntries(entriesRes.data.entries);
-        if (summaryRes.data.success) setSummary(summaryRes.data.summary);
+        // Reload budget lists and summary calculation in parallel
+        const [entriesRes, summaryRes] = await Promise.all([
+          api.get(`/trips/${tripId}/budget-entries`),
+          api.get(`/trips/${tripId}/budget-summary`),
+        ]);
+        if (entriesRes.data.success) {
+          setEntries(entriesRes.data.entries);
+        }
+        if (summaryRes.data.success) {
+          setSummary(summaryRes.data.summary);
+        }
       }
     } catch (err: any) {
       console.error('Error adding expense:', err);

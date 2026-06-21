@@ -6,6 +6,7 @@
  * Displays details for a single selected destination.
  * Shows description, activities tags, travel season, budget range, and images.
  * Provides a call-to-action linking directly to the AI Travel Planner.
+ * Integrates an interactive reviews panel for reading and posting ratings/comments.
  */
 
 import { useEffect, useState, useCallback } from 'react';
@@ -13,6 +14,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import { Destination } from '@/components/shared/DestinationCard';
+import { useAuthStore } from '@/store/authStore';
 import {
   Compass,
   MapPin,
@@ -22,6 +24,7 @@ import {
   Loader2,
   AlertCircle,
   TrendingUp,
+  Star,
 } from 'lucide-react';
 
 interface DestinationDetailProps {
@@ -30,11 +33,56 @@ interface DestinationDetailProps {
   };
 }
 
+interface Review {
+  _id: string;
+  userId: {
+    _id: string;
+    name: string;
+    avatar?: string;
+  };
+  targetId: string;
+  targetType: 'destination' | 'guide';
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
+
+// Image mappings for the seeded Indian destinations
+const DESTINATION_IMAGE_MAPPINGS: Record<string, string> = {
+  'Goa': 'https://images.unsplash.com/photo-1506461883276-594a12b11cc3?auto=format&fit=crop&w=1200&q=80',
+  'Manali': 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80',
+  'Ladakh': 'https://images.unsplash.com/photo-1596700445887-321287c88b03?auto=format&fit=crop&w=1200&q=80',
+  'Jaipur': 'https://images.unsplash.com/photo-1477584322811-591f423e20de?auto=format&fit=crop&w=1200&q=80',
+  'Coorg': 'https://images.unsplash.com/photo-1590001155093-a3c66ab0c3ff?auto=format&fit=crop&w=1200&q=80',
+  'Munnar': 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1200&q=80',
+  'Pondicherry': 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
+  'Rishikesh': 'https://images.unsplash.com/photo-1598977123418-45f04b01f4ac?auto=format&fit=crop&w=1200&q=80',
+  'Udaipur': 'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80',
+  'Meghalaya': 'https://images.unsplash.com/photo-1628155930542-3c7a64e2c833?auto=format&fit=crop&w=1200&q=80',
+};
+
 export default function DestinationDetailPage({ params }: DestinationDetailProps) {
   const router = useRouter();
+  const { user, isAuthenticated } = useAuthStore();
+  
   const [destination, setDestination] = useState<Destination | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Reviews states
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [isReviewsLoading, setIsReviewsLoading] = useState(true);
+  
+  // Review form states
+  const [formRating, setFormRating] = useState(5);
+  const [formComment, setFormComment] = useState('');
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  const imageUrl = destination && (destination.images && destination.images.length > 0
+    ? destination.images[0]
+    : DESTINATION_IMAGE_MAPPINGS[destination.name] || '');
 
   const fetchDetail = useCallback(async () => {
     setIsLoading(true);
@@ -53,9 +101,54 @@ export default function DestinationDetailPage({ params }: DestinationDetailProps
     }
   }, [params.id]);
 
+  const fetchReviews = useCallback(async () => {
+    setIsReviewsLoading(true);
+    try {
+      const res = await api.get(`/reviews?targetId=${params.id}&targetType=destination`);
+      if (res.data.success) {
+        setReviews(res.data.reviews);
+      }
+    } catch (err) {
+      console.error('Error fetching reviews:', err);
+    } finally {
+      setIsReviewsLoading(false);
+    }
+  }, [params.id]);
+
   useEffect(() => {
     fetchDetail();
-  }, [fetchDetail]);
+    fetchReviews();
+  }, [fetchDetail, fetchReviews]);
+
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formComment.trim().length < 10) {
+      setSubmitError('Comment must be at least 10 characters.');
+      return;
+    }
+    setIsSubmittingReview(true);
+    setSubmitError(null);
+    setSubmitSuccess(false);
+    try {
+      const res = await api.post('/reviews', {
+        targetId: params.id,
+        targetType: 'destination',
+        rating: formRating,
+        comment: formComment,
+      });
+      if (res.data.success) {
+        setSubmitSuccess(true);
+        setFormComment('');
+        setFormRating(5);
+        fetchReviews(); // Refresh review list
+      }
+    } catch (err: any) {
+      console.error('Error submitting review:', err);
+      setSubmitError(err.response?.data?.message || 'Failed to submit review.');
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -126,10 +219,18 @@ export default function DestinationDetailPage({ params }: DestinationDetailProps
             </h1>
           </div>
 
-          {/* Large image placeholder */}
+          {/* Large image cover */}
           <div className="relative h-96 w-full rounded-2xl border border-white/5 bg-gradient-to-br from-slate-900 to-indigo-950/40 flex items-center justify-center overflow-hidden shadow-2xl">
-            <Compass className="h-20 w-20 text-slate-800" />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-80" />
+            {imageUrl ? (
+              <img 
+                src={imageUrl} 
+                alt={destination.name} 
+                className="w-full h-full object-cover opacity-80" 
+              />
+            ) : (
+              <Compass className="h-20 w-20 text-slate-800" />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-transparent opacity-90" />
           </div>
 
           {/* Description */}
@@ -152,6 +253,160 @@ export default function DestinationDetailPage({ params }: DestinationDetailProps
                   {act}
                 </span>
               ))}
+            </div>
+          </div>
+
+          {/* Reviews Panel */}
+          <div className="bg-slate-900/20 border border-white/5 p-6 rounded-2xl backdrop-blur-md space-y-6">
+            <div className="flex items-center justify-between border-b border-white/5 pb-4">
+              <h2 className="text-xl font-bold text-white">Reviews & Feedback</h2>
+              <span className="text-xs text-slate-400 font-semibold bg-slate-800 border border-white/5 px-2.5 py-1 rounded-full">
+                {reviews.length} {reviews.length === 1 ? 'Review' : 'Reviews'}
+              </span>
+            </div>
+
+            {/* List Reviews */}
+            {isReviewsLoading ? (
+              <div className="flex justify-center items-center py-6">
+                <Loader2 className="h-6 w-6 text-teal-500 animate-spin" />
+              </div>
+            ) : reviews.length === 0 ? (
+              <p className="text-slate-400 text-sm py-4 text-center">No reviews yet. Be the first to share your experience!</p>
+            ) : (
+              <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                {reviews.map((rev) => (
+                  <div key={rev._id} className="border border-white/5 bg-slate-950/40 p-4 rounded-xl space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2.5">
+                        <div className="h-8 w-8 rounded-full bg-gradient-to-r from-teal-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white">
+                          {rev.userId.name.charAt(0)}
+                        </div>
+                        <div>
+                          <span className="text-sm font-bold text-slate-200 block">{rev.userId.name}</span>
+                          <span className="text-[10px] text-slate-500">
+                            {new Date(rev.createdAt).toLocaleDateString(undefined, {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                            })}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Stars */}
+                      <div className="flex items-center space-x-0.5">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`h-3.5 w-3.5 ${
+                              i < rev.rating
+                                ? 'text-amber-400 fill-amber-400'
+                                : 'text-slate-700'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-slate-300 text-xs leading-relaxed pl-10">
+                      {rev.comment}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Post Review Form */}
+            <div className="border-t border-white/5 pt-6">
+              <h3 className="text-lg font-bold text-white mb-4">Leave a Review</h3>
+              {isAuthenticated ? (
+                <form onSubmit={handleSubmitReview} className="space-y-4">
+                  {submitError && (
+                    <div className="flex items-center space-x-2 rounded-lg bg-rose-500/10 border border-rose-500/20 p-3 text-xs text-rose-400">
+                      <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                      <span>{submitError}</span>
+                    </div>
+                  )}
+
+                  {submitSuccess && (
+                    <div className="flex items-center space-x-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-3 text-xs text-emerald-400">
+                      <Sparkles className="h-4 w-4 flex-shrink-0" />
+                      <span>Thank you! Your review has been submitted successfully.</span>
+                    </div>
+                  )}
+
+                  <div className="flex items-center space-x-3">
+                    <span className="text-sm font-semibold text-slate-300">Rating:</span>
+                    <div className="flex items-center space-x-1">
+                      {Array.from({ length: 5 }).map((_, i) => {
+                        const starVal = i + 1;
+                        return (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => {
+                              setFormRating(starVal);
+                              setSubmitSuccess(false);
+                            }}
+                            className="hover:scale-110 transition-transform"
+                          >
+                            <Star
+                              className={`h-6 w-6 ${
+                                starVal <= formRating
+                                  ? 'text-amber-400 fill-amber-400'
+                                  : 'text-slate-700 hover:text-amber-400/55'
+                              }`}
+                            />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="comment" className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                      Review Comment (Min 10 characters)
+                    </label>
+                    <textarea
+                      id="comment"
+                      value={formComment}
+                      onChange={(e) => {
+                        setFormComment(e.target.value);
+                        setSubmitSuccess(false);
+                      }}
+                      rows={3}
+                      placeholder="Share your thoughts about this destination..."
+                      className="w-full rounded-xl border border-white/5 bg-slate-950/60 p-3 text-sm text-slate-200 placeholder-slate-600 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                    />
+                  </div>
+
+                  <div className="flex justify-end">
+                    <button
+                      type="submit"
+                      disabled={isSubmittingReview}
+                      className="flex items-center justify-center space-x-2 rounded-lg bg-teal-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-teal-400 disabled:opacity-50 transition-all font-bold"
+                    >
+                      {isSubmittingReview ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>Submitting...</span>
+                        </>
+                      ) : (
+                        <span>Submit Review</span>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div className="rounded-xl border border-dashed border-white/10 bg-slate-950/20 p-6 text-center">
+                  <p className="text-sm text-slate-400">You must be logged in to share a review.</p>
+                  <Link
+                    href="/login"
+                    className="mt-3 inline-block rounded-lg bg-slate-800 border border-white/5 px-4 py-1.5 text-xs font-semibold text-slate-200 hover:bg-slate-700 transition-colors"
+                  >
+                    Log In
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
 

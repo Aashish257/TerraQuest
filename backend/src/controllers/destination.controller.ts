@@ -1,22 +1,8 @@
-/**
- * destination.controller.ts — Destinations controller
- *
- * Implements endpoints for:
- * - GET /api/destinations (search, activity/budget filters, pagination)
- * - GET /api/destinations/:id (detail lookup)
- * - GET /api/destinations/:id/hidden-places (returns empty array for P1 placeholder)
- */
-
 import { Request, Response, NextFunction } from 'express';
-import Destination from '../models/Destination';
+import { AuthRequest } from '../middleware/auth.middleware';
+import * as destinationService from '../services/destination.service';
+import * as hiddenPlaceService from '../services/hiddenPlace.service';
 import { AppError } from '../middleware/errorHandler';
-
-// Helper: Extract min budget number from budgetRange string (e.g. "₹3,000 – ₹12,000 per day" -> 3000)
-const getMinBudget = (range: string): number => {
-  const cleanRange = range.replace(/,/g, '');
-  const match = cleanRange.match(/\d+/);
-  return match ? parseInt(match[0], 10) : 0;
-};
 
 export const getDestinations = async (
   req: Request,
@@ -24,57 +10,22 @@ export const getDestinations = async (
   next: NextFunction
 ) => {
   try {
-    const { search, activity, budget, page = '1', limit = '10' } = req.query;
+    const filters = {
+      search: req.query.search as string,
+      activity: req.query.activity as string,
+      budget: req.query.budget as string,
+      page: req.query.page as string,
+      limit: req.query.limit as string,
+      status: req.query.status as string,
+    };
 
-    const query: any = {};
-
-    // 1. Text Search (Name and Activities text index)
-    if (search) {
-      query.$text = { $search: search as string };
-    }
-
-    // 2. Activity filter
-    if (activity) {
-      query.activities = { $regex: new RegExp(activity as string, 'i') };
-    }
-
-    // Fetch matching records
-    let destinations = await Destination.find(query);
-
-    // 3. Budget filter (Applied in-memory for flexible string range checking)
-    if (budget) {
-      destinations = destinations.filter((dest) => {
-        const minBudget = getMinBudget(dest.budgetRange || '');
-        if (budget === 'low') {
-          return minBudget < 2500;
-        } else if (budget === 'medium') {
-          return minBudget >= 2500 && minBudget < 4000;
-        } else if (budget === 'high') {
-          return minBudget >= 4000;
-        }
-        return true;
-      });
-    }
-
-    // 4. Pagination
-    const pageNum = parseInt(page as string, 10) || 1;
-    const limitNum = parseInt(limit as string, 10) || 10;
-    const total = destinations.length;
-    const totalPages = Math.ceil(total / limitNum);
-
-    const startIndex = (pageNum - 1) * limitNum;
-    const paginatedDestinations = destinations.slice(startIndex, startIndex + limitNum);
+    const result = await destinationService.listDestinations(filters);
 
     res.status(200).json({
       success: true,
-      count: paginatedDestinations.length,
-      pagination: {
-        total,
-        page: pageNum,
-        limit: limitNum,
-        totalPages,
-      },
-      destinations: paginatedDestinations,
+      count: result.destinations.length,
+      pagination: result.pagination,
+      destinations: result.destinations,
     });
   } catch (err) {
     next(err);
@@ -87,11 +38,7 @@ export const getDestinationById = async (
   next: NextFunction
 ) => {
   try {
-    const destination = await Destination.findById(req.params.id);
-    if (!destination) {
-      throw new AppError('Destination not found', 404);
-    }
-
+    const destination = await destinationService.getDestinationById(req.params.id);
     res.status(200).json({
       success: true,
       destination,
@@ -107,16 +54,93 @@ export const getHiddenPlacesByDestinationId = async (
   next: NextFunction
 ) => {
   try {
-    const destination = await Destination.findById(req.params.id);
-    if (!destination) {
-      throw new AppError('Destination not found', 404);
-    }
+    // Verify destination exists first
+    await destinationService.getDestinationById(req.params.id);
 
-    // P1 Compliance Placeholder: returns an empty array for now
+    const hiddenPlaces = await hiddenPlaceService.getHiddenPlacesByDestination(req.params.id);
+
     res.status(200).json({
       success: true,
-      count: 0,
-      hiddenPlaces: [],
+      count: hiddenPlaces.length,
+      hiddenPlaces,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const submitDestinationContribution = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) throw new AppError('Unauthenticated', 401);
+
+    const destination = await destinationService.createDestinationContribution(req.user._id, req.body);
+
+    res.status(201).json({
+      success: true,
+      destination,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getMyContributions = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) throw new AppError('Unauthenticated', 401);
+
+    const destinations = await destinationService.getGuideContributions(req.user._id);
+
+    res.status(200).json({
+      success: true,
+      count: destinations.length,
+      destinations,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const updateDestinationStatus = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { status } = req.body;
+    if (status !== 'approved' && status !== 'rejected') {
+      throw new AppError("Invalid status. Must be 'approved' or 'rejected'", 400);
+    }
+
+    const destination = await destinationService.updateDestinationStatus(req.params.id, status);
+
+    res.status(200).json({
+      success: true,
+      destination,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getPendingDestinations = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const result = await destinationService.listDestinations({ status: 'pending', limit: '100' });
+    res.status(200).json({
+      success: true,
+      count: result.destinations.length,
+      destinations: result.destinations,
     });
   } catch (err) {
     next(err);

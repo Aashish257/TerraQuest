@@ -17,6 +17,7 @@ import { env } from './config/env'; // validates env — exits if invalid
 import { connectDB, disconnectDB } from './config/db';
 import app from './app';
 import http from 'http';
+import { logger } from './utils/logger';
 
 const PORT = env.PORT;
 
@@ -29,14 +30,10 @@ const startServer = async (): Promise<void> => {
     await connectDB();
 
     server.listen(PORT, () => {
-      console.log('\n🚀 TerraQuest API Server');
-      console.log(`   Environment : ${env.NODE_ENV}`);
-      console.log(`   Port        : ${PORT}`);
-      console.log(`   Health      : http://localhost:${PORT}/health`);
-      console.log(`   API         : http://localhost:${PORT}/api\n`);
+      logger.info({ env: env.NODE_ENV, port: PORT }, `TerraQuest API Server started on port ${PORT}`);
     });
   } catch (error) {
-    console.error('❌ Failed to start server:', error);
+    logger.error({ err: error }, 'Failed to start server');
     process.exit(1);
   }
 };
@@ -44,18 +41,18 @@ const startServer = async (): Promise<void> => {
 // ─── Graceful Shutdown ────────────────────────────────────────────────────────
 // Handles SIGTERM (from Railway/Render on deploy) and SIGINT (Ctrl+C in dev)
 const gracefulShutdown = async (signal: string): Promise<void> => {
-  console.log(`\n⚡ ${signal} received — shutting down gracefully...`);
+  logger.info(`${signal} received — shutting down gracefully...`);
 
   server.close(async () => {
-    console.log('🔒 HTTP server closed');
+    logger.info('HTTP server closed');
     await disconnectDB();
-    console.log('👋 TerraQuest API shut down complete');
+    logger.info('TerraQuest API shut down complete');
     process.exit(0);
   });
 
   // Force shutdown if graceful close takes too long
   setTimeout(() => {
-    console.error('⏰ Forced shutdown after timeout');
+    logger.error('Forced shutdown after timeout');
     process.exit(1);
   }, 10000);
 };
@@ -65,12 +62,12 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 // ─── Unhandled Error Safety Net ───────────────────────────────────────────────
 process.on('unhandledRejection', (reason: unknown) => {
-  console.error('❌ Unhandled Promise Rejection:', reason);
+  logger.error({ reason }, 'Unhandled Promise Rejection');
   // Don't exit — log and continue. Railway will restart if needed.
 });
 
 process.on('uncaughtException', (error: Error) => {
-  console.error('❌ Uncaught Exception:', error);
+  logger.error({ err: error }, 'Uncaught Exception');
   process.exit(1); // Uncaught exceptions leave the app in unknown state — must restart
 });
 
