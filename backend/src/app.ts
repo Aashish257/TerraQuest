@@ -18,6 +18,7 @@
 
 import express, { Request, Response } from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import { env } from './config/env';
 import { errorHandler } from './middleware/errorHandler';
 import authRoutes from './routes/auth.routes';
@@ -27,6 +28,9 @@ import tripRoutes from './routes/trip.routes';
 import aiRoutes from './routes/ai.routes';
 import reviewRoutes from './routes/review.routes';
 import guideRoutes from './routes/guide.routes';
+import hiddenPlaceRoutes from './routes/hiddenPlace.routes';
+import experienceRoutes from './routes/experience.routes';
+import guideRequestRoutes from './routes/guideRequest.routes';
 
 
 const app = express();
@@ -44,6 +48,9 @@ app.use(
     credentials: true, // allows cookies if needed in future
   })
 );
+
+// Parse cookies from Request headers
+app.use(cookieParser());
 
 // Parse incoming JSON request bodies
 // limit: 10mb — prevents extremely large payloads (basic DoS protection)
@@ -73,6 +80,9 @@ app.use('/api/trips', tripRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/guides', guideRoutes);
+app.use('/api/hidden-places', hiddenPlaceRoutes);
+app.use('/api/experiences', experienceRoutes);
+app.use('/api/guide-requests', guideRequestRoutes);
 
 // Base API route information
 app.get('/api', (_req: Request, res: Response) => {

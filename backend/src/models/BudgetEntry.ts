@@ -60,4 +60,19 @@ const BudgetEntrySchema = new Schema<IBudgetEntry>(
 BudgetEntrySchema.index({ tripId: 1 });    // fetch all entries for a trip
 BudgetEntrySchema.index({ category: 1 }); // group by category for summary
 
+// ─── Hooks for caching spent budget ──────────────────────────────────────────
+BudgetEntrySchema.post('save', async function (doc) {
+  await mongoose.model('Trip').findByIdAndUpdate(doc.tripId, {
+    $inc: { totalSpent: doc.amount }
+  });
+});
+
+BudgetEntrySchema.post('findOneAndDelete', async function (doc) {
+  if (doc) {
+    await mongoose.model('Trip').findByIdAndUpdate(doc.tripId, {
+      $inc: { totalSpent: -doc.amount }
+    });
+  }
+});
+
 export default mongoose.model<IBudgetEntry>('BudgetEntry', BudgetEntrySchema);

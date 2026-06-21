@@ -8,13 +8,19 @@ import { Router } from 'express';
 import { authenticate } from '../middleware/auth.middleware';
 import { authorize } from '../middleware/role.middleware';
 import { validate } from '../middleware/validate.middleware';
-import { createGuideProfileSchema, updateGuideProfileSchema } from '../validators/guide.validator';
 import {
   getGuides,
   getGuideById,
   createGuideProfile,
   updateGuideProfile,
+  becomeGuide,
+  updateMyProfile,
 } from '../controllers/guide.controller';
+import {
+  createGuideProfileSchema,
+  updateGuideProfileSchema,
+  updateGuideProfileAndUserSchema,
+} from '../validators/guide.validator';
 
 const router = Router();
 
@@ -22,7 +28,23 @@ const router = Router();
 router.get('/', getGuides);
 router.get('/:id', getGuideById);
 
+// Protected routes (Any authenticated user can upgrade to guide)
+router.post(
+  '/become',
+  authenticate,
+  validate(createGuideProfileSchema),
+  becomeGuide
+);
+
 // Protected routes (Only users with 'guide' role)
+router.put(
+  '/profile/me',
+  authenticate,
+  authorize('guide'),
+  validate(updateGuideProfileAndUserSchema),
+  updateMyProfile
+);
+
 router.post(
   '/',
   authenticate,

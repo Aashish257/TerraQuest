@@ -47,6 +47,20 @@ interface Review {
   createdAt: string;
 }
 
+// Image mappings for the seeded Indian destinations
+const DESTINATION_IMAGE_MAPPINGS: Record<string, string> = {
+  'Goa': 'https://images.unsplash.com/photo-1506461883276-594a12b11cc3?auto=format&fit=crop&w=1200&q=80',
+  'Manali': 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80',
+  'Ladakh': 'https://images.unsplash.com/photo-1596700445887-321287c88b03?auto=format&fit=crop&w=1200&q=80',
+  'Jaipur': 'https://images.unsplash.com/photo-1477584322811-591f423e20de?auto=format&fit=crop&w=1200&q=80',
+  'Coorg': 'https://images.unsplash.com/photo-1590001155093-a3c66ab0c3ff?auto=format&fit=crop&w=1200&q=80',
+  'Munnar': 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1200&q=80',
+  'Pondicherry': 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
+  'Rishikesh': 'https://images.unsplash.com/photo-1598977123418-45f04b01f4ac?auto=format&fit=crop&w=1200&q=80',
+  'Udaipur': 'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80',
+  'Meghalaya': 'https://images.unsplash.com/photo-1628155930542-3c7a64e2c833?auto=format&fit=crop&w=1200&q=80',
+};
+
 export default function DestinationDetailPage({ params }: DestinationDetailProps) {
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
@@ -65,6 +79,10 @@ export default function DestinationDetailPage({ params }: DestinationDetailProps
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  const imageUrl = destination && (destination.images && destination.images.length > 0
+    ? destination.images[0]
+    : DESTINATION_IMAGE_MAPPINGS[destination.name] || '');
 
   const fetchDetail = useCallback(async () => {
     setIsLoading(true);
@@ -201,10 +219,18 @@ export default function DestinationDetailPage({ params }: DestinationDetailProps
             </h1>
           </div>
 
-          {/* Large image placeholder */}
+          {/* Large image cover */}
           <div className="relative h-96 w-full rounded-2xl border border-white/5 bg-gradient-to-br from-slate-900 to-indigo-950/40 flex items-center justify-center overflow-hidden shadow-2xl">
-            <Compass className="h-20 w-20 text-slate-800" />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-80" />
+            {imageUrl ? (
+              <img 
+                src={imageUrl} 
+                alt={destination.name} 
+                className="w-full h-full object-cover opacity-80" 
+              />
+            ) : (
+              <Compass className="h-20 w-20 text-slate-800" />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-transparent opacity-90" />
           </div>
 
           {/* Description */}

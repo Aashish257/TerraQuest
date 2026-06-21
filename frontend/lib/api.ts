@@ -12,9 +12,10 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 });
 
-// Request Interceptor: Attach JWT Bearer Token if present
+// Request Interceptor: Attach JWT Bearer Token if present (fallback for dev/compat)
 api.interceptors.request.use(
   (config) => {
     if (typeof window !== 'undefined') {
@@ -26,6 +27,21 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response Interceptor: Redirect or logout on 401
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }
+    }
     return Promise.reject(error);
   }
 );

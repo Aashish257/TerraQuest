@@ -40,10 +40,12 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   login: (user, token) => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('token', token);
+      if (token) {
+        localStorage.setItem('token', token);
+      }
       localStorage.setItem('user', JSON.stringify(user));
     }
-    set({ user, token, isAuthenticated: true, isLoading: false });
+    set({ user, token: token || null, isAuthenticated: true, isLoading: false });
   },
 
   logout: () => {
@@ -67,9 +69,9 @@ export const useAuthStore = create<AuthState>((set) => ({
         const token = localStorage.getItem('token');
         const userJson = localStorage.getItem('user');
         
-        if (token && userJson) {
+        if (userJson) {
           const user = JSON.parse(userJson) as User;
-          set({ user, token, isAuthenticated: true, isLoading: false });
+          set({ user, token: token || null, isAuthenticated: true, isLoading: false });
           return;
         }
       } catch (err) {

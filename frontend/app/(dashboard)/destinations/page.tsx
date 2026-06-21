@@ -96,31 +96,74 @@ export default function DestinationsPage() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 w-full flex-grow flex flex-col justify-start">
-      
-      {/* Page Title Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-        <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl flex items-center space-x-2">
-            <Compass className="h-8 w-8 text-teal-400" />
-            <span>Explore Destinations</span>
-          </h1>
-          <p className="mt-2 text-sm text-slate-400">
-            Uncover popular spots and guide-curated secret retreats across India.
-          </p>
+    <div className="w-full flex-grow flex flex-col justify-start">
+
+      {/* ─── Hero Banner ─────────────────────────────────────────────────── */}
+      <div className="relative overflow-hidden bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-teal-950/60 via-slate-950 to-indigo-950/30 border-b border-white/5 px-4 sm:px-6 lg:px-8 py-12">
+        {/* Background decorations */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute -top-10 -left-10 h-60 w-60 rounded-full bg-teal-500/5 blur-3xl" />
+          <div className="absolute -bottom-10 right-20 h-60 w-80 rounded-full bg-indigo-500/5 blur-3xl" />
         </div>
 
-        {/* Reset Filters CTA */}
-        {(search || selectedActivity || selectedBudget) && (
+        <div className="relative mx-auto max-w-7xl">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full bg-teal-500/10 border border-teal-500/20 px-3 py-1 text-xs font-bold text-teal-400 uppercase tracking-widest mb-3">
+                <Compass className="h-3 w-3" />
+                Explore India
+              </div>
+              <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">
+                <span className="text-white">Discover </span>
+                <span className="bg-gradient-to-r from-teal-400 to-indigo-400 bg-clip-text text-transparent">
+                  Hidden Gems
+                </span>
+              </h1>
+              <p className="mt-3 text-slate-400 max-w-lg">
+                From sun-kissed beaches to misty mountain trails — explore curated destinations and guide-discovered secret spots across India.
+              </p>
+              {!isLoading && totalRecords > 0 && (
+                <p className="mt-2 text-xs text-slate-500 font-semibold">
+                  <span className="text-teal-400 font-bold">{totalRecords}</span> destinations available to explore
+                </p>
+              )}
+            </div>
+
+            {/* Quick stat chips */}
+            <div className="flex flex-wrap gap-2">
+              {activities.slice(0, 4).map((act) => (
+                <button
+                  key={act}
+                  onClick={() => { setSelectedActivity(selectedActivity === act ? '' : act); setPage(1); }}
+                  className={`rounded-full px-4 py-1.5 text-xs font-semibold border transition-all ${
+                    selectedActivity === act
+                      ? 'border-teal-500 bg-teal-500/15 text-teal-400'
+                      : 'border-white/10 bg-white/5 text-slate-400 hover:bg-white/10 hover:text-slate-200'
+                  }`}
+                >
+                  {act}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── Main Content ────────────────────────────────────────────────── */}
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 w-full">
+      
+      {/* Reset Filters CTA */}
+      {(search || selectedActivity || selectedBudget) && (
+        <div className="flex justify-end mb-4">
           <button
             onClick={handleReset}
-            className="flex items-center justify-center space-x-1.5 rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-800 transition-colors self-start md:self-center"
+            className="flex items-center justify-center space-x-1.5 rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-800 transition-colors"
           >
             <RefreshCw className="h-3.5 w-3.5" />
-            <span>Clear Filters</span>
+            <span>Clear All Filters</span>
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Search and Filter Inputs Block */}
       <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3 bg-slate-900/25 border border-white/5 p-6 rounded-2xl backdrop-blur-md">
@@ -298,6 +341,7 @@ export default function DestinationsPage() {
         )}
       </div>
 
+      </div>
     </div>
   );
 }

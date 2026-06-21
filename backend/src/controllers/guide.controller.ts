@@ -1,16 +1,6 @@
-/**
- * guide.controller.ts — Guide Profile controller
- *
- * Implements endpoints for:
- * - GET /api/guides (list guides, filter by location & rating, pagination)
- * - GET /api/guides/:id (fetch single guide profile detail)
- * - POST /api/guides (create a guide profile, restricted to role 'guide')
- * - PUT /api/guides/:id (update guide profile, restricted to owner)
- */
-
 import { Request, Response, NextFunction } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
-import GuideProfile from '../models/GuideProfile';
+import * as guideService from '../services/guide.service';
 import { AppError } from '../middleware/errorHandler';
 
 export const getGuides = async (
@@ -19,41 +9,20 @@ export const getGuides = async (
   next: NextFunction
 ) => {
   try {
-    const { location, rating, page = '1', limit = '10' } = req.query;
+    const filters = {
+      location: req.query.location as string,
+      rating: req.query.rating as string,
+      page: req.query.page as string,
+      limit: req.query.limit as string,
+    };
 
-    const query: any = {};
-
-    if (location) {
-      query.location = { $regex: new RegExp(location as string, 'i') };
-    }
-
-    if (rating) {
-      query.rating = { $gte: parseFloat(rating as string) };
-    }
-
-    const pageNum = parseInt(page as string, 10) || 1;
-    const limitNum = parseInt(limit as string, 10) || 10;
-    const skip = (pageNum - 1) * limitNum;
-
-    const total = await GuideProfile.countDocuments(query);
-    const totalPages = Math.ceil(total / limitNum);
-
-    const guides = await GuideProfile.find(query)
-      .populate('userId', 'name email avatar bio')
-      .skip(skip)
-      .limit(limitNum)
-      .sort({ rating: -1 });
+    const result = await guideService.listGuides(filters);
 
     res.status(200).json({
       success: true,
-      count: guides.length,
-      pagination: {
-        total,
-        page: pageNum,
-        limit: limitNum,
-        totalPages,
-      },
-      guides,
+      count: result.guides.length,
+      pagination: result.pagination,
+      guides: result.guides,
     });
   } catch (err) {
     next(err);
@@ -66,16 +35,7 @@ export const getGuideById = async (
   next: NextFunction
 ) => {
   try {
-    let guide = await GuideProfile.findById(req.params.id).populate('userId', 'name email avatar bio');
-    if (!guide) {
-      // Fallback: search by userId
-      guide = await GuideProfile.findOne({ userId: req.params.id }).populate('userId', 'name email avatar bio');
-    }
-
-    if (!guide) {
-      throw new AppError('Guide profile not found', 404);
-    }
-
+    const guide = await guideService.getGuideById(req.params.id);
     res.status(200).json({
       success: true,
       guide,
@@ -91,26 +51,59 @@ export const createGuideProfile = async (
   next: NextFunction
 ) => {
   try {
-    const { experience, languages, expertise, location, bio } = req.body;
+    if (!req.user) throw new AppError('Unauthenticated', 401);
 
-    // Check if profile already exists for the user
-    const existingProfile = await GuideProfile.findOne({ userId: req.user!._id });
-    if (existingProfile) {
-      throw new AppError('Guide profile already exists for this user', 409);
-    }
-
-    const profile = await GuideProfile.create({
-      userId: req.user!._id,
-      experience,
-      languages,
-      expertise,
-      location,
-      bio,
-    });
+    const profile = await guideService.createGuideProfile(req.user._id, req.body);
 
     res.status(201).json({
       success: true,
       data: profile,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const becomeGuide = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) throw new AppError('Unauthenticated', 401);
+
+    const result = await guideService.becomeGuide(req.user._id, req.body);
+
+    // Set the updated token cookie
+    res.cookie('accessToken', result.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(201).json({
+      success: true,
+      ...result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const updateMyProfile = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) throw new AppError('Unauthenticated', 401);
+
+    const result = await guideService.updateGuideProfileAndUser(req.user._id, req.body);
+
+    res.status(200).json({
+      success: true,
+      data: result,
     });
   } catch (err) {
     next(err);
@@ -123,30 +116,9 @@ export const updateGuideProfile = async (
   next: NextFunction
 ) => {
   try {
-    let profile = await GuideProfile.findById(req.params.id);
-    if (!profile) {
-      // Fallback: search by userId
-      profile = await GuideProfile.findOne({ userId: req.params.id });
-    }
+    if (!req.user) throw new AppError('Unauthenticated', 401);
 
-    if (!profile) {
-      throw new AppError('Guide profile not found', 404);
-    }
-
-    // Ownership check (userId comparison)
-    if (profile.userId.toString() !== req.user!._id) {
-      throw new AppError('Forbidden: You can only update your own profile', 403);
-    }
-
-    const { experience, languages, expertise, location, bio } = req.body;
-
-    if (experience !== undefined) profile.experience = experience;
-    if (languages !== undefined) profile.languages = languages;
-    if (expertise !== undefined) profile.expertise = expertise;
-    if (location !== undefined) profile.location = location;
-    if (bio !== undefined) profile.bio = bio;
-
-    await profile.save();
+    const profile = await guideService.updateGuideProfile(req.params.id, req.user._id, req.body);
 
     res.status(200).json({
       success: true,

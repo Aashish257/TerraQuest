@@ -1,15 +1,9 @@
-/**
- * rating.service.ts — Recalculates average ratings and total reviews for guides.
- *
- * This runs on any review create, update, or delete where targetType === 'guide'.
- */
-
 import mongoose from 'mongoose';
-import Review from '../models/Review';
-import GuideProfile from '../models/GuideProfile';
+import { reviewRepository } from '../repositories/ReviewRepository';
+import { guideRepository } from '../repositories/GuideRepository';
 
 export const recalculateGuideRating = async (guideId: string | mongoose.Types.ObjectId) => {
-  const result = await Review.aggregate([
+  const result = await reviewRepository.aggregate([
     {
       $match: {
         targetId: new mongoose.Types.ObjectId(guideId),
@@ -28,7 +22,7 @@ export const recalculateGuideRating = async (guideId: string | mongoose.Types.Ob
   const avgRating = result[0]?.avgRating ?? 0;
   const count = result[0]?.count ?? 0;
 
-  await GuideProfile.findOneAndUpdate(
+  await guideRepository.updateOne(
     { userId: new mongoose.Types.ObjectId(guideId) },
     {
       rating: Math.round(avgRating * 10) / 10,

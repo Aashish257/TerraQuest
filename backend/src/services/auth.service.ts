@@ -10,7 +10,8 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env';
-import User, { IUser } from '../models/User';
+import { IUser } from '../models/User';
+import { userRepository } from '../repositories/UserRepository';
 import { AppError } from '../middleware/errorHandler';
 
 // Helper: Generate JWT token for a user
@@ -26,18 +27,17 @@ export const registerUser = async (data: any) => {
   const { name, email, password, role } = data;
 
   // 1. Check if user already exists
-  const existingUser = await User.findOne({ email });
+  const existingUser = await userRepository.findByEmail(email);
   if (existingUser) {
     throw new AppError('Email is already registered', 400);
   }
 
   // 2. Hash the password
-  // Standard 10 rounds of salt is secure and fast enough for server response times
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
 
   // 3. Create the user
-  const user = await User.create({
+  const user = await userRepository.create({
     name,
     email,
     password: hashedPassword,
@@ -64,8 +64,8 @@ export const registerUser = async (data: any) => {
 export const loginUser = async (data: any) => {
   const { email, password } = data;
 
-  // 1. Find user and explicitly select password (since select: false is set on the model)
-  const user = await User.findOne({ email }).select('+password');
+  // 1. Find user and explicitly select password
+  const user = await userRepository.findByEmailWithPassword(email);
   if (!user) {
     throw new AppError('Invalid email or password', 401);
   }

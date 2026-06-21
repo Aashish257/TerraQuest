@@ -1,37 +1,7 @@
-/**
- * budget.controller.ts — Budget entry controller
- *
- * Handles nested routes for managing trip expenses:
- * - POST /api/trips/:tripId/budget-entries (add expense)
- * - GET /api/trips/:tripId/budget-entries (list expenses)
- * - DELETE /api/trips/:tripId/budget-entries/:entryId (remove expense)
- * - GET /api/trips/:tripId/budget-summary (retrieve calculations breakdown)
- *
- * Verifies that the user is an active participant (owner or member) of the trip.
- */
-
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
-import BudgetEntry from '../models/BudgetEntry';
-import Trip from '../models/Trip';
-import TripMember from '../models/TripMember';
 import * as budgetService from '../services/budget.service';
 import { AppError } from '../middleware/errorHandler';
-
-// Helper: Ensure the requesting user has access to the trip (is owner or member)
-const verifyTripAccess = async (tripId: string, userId: string): Promise<any> => {
-  const trip = await Trip.findById(tripId);
-  if (!trip) {
-    throw new AppError('Trip not found', 404);
-  }
-
-  const member = await TripMember.findOne({ tripId, userId });
-  if (!member) {
-    throw new AppError('Access denied: You are not a participant in this trip', 403);
-  }
-
-  return trip;
-};
 
 export const addBudgetEntry = async (
   req: AuthRequest,
@@ -41,19 +11,7 @@ export const addBudgetEntry = async (
   try {
     if (!req.user) throw new AppError('Unauthenticated', 401);
 
-    const { tripId } = req.params;
-    const { category, amount, description } = req.body;
-
-    // 1. Verify trip exists and user is owner/member
-    await verifyTripAccess(tripId, req.user._id);
-
-    // 2. Create entry
-    const entry = await BudgetEntry.create({
-      tripId,
-      category,
-      amount,
-      description,
-    });
+    const entry = await budgetService.addBudgetEntry(req.params.tripId, req.user._id, req.body);
 
     res.status(201).json({
       success: true,
@@ -72,13 +30,7 @@ export const getBudgetEntries = async (
   try {
     if (!req.user) throw new AppError('Unauthenticated', 401);
 
-    const { tripId } = req.params;
-
-    // 1. Verify trip access
-    await verifyTripAccess(tripId, req.user._id);
-
-    // 2. Fetch all entries
-    const entries = await BudgetEntry.find({ tripId }).sort({ createdAt: -1 });
+    const entries = await budgetService.getBudgetEntries(req.params.tripId, req.user._id);
 
     res.status(200).json({
       success: true,
@@ -98,16 +50,7 @@ export const deleteBudgetEntry = async (
   try {
     if (!req.user) throw new AppError('Unauthenticated', 401);
 
-    const { tripId, entryId } = req.params;
-
-    // 1. Verify access to the trip
-    await verifyTripAccess(tripId, req.user._id);
-
-    // 2. Find and delete the entry
-    const entry = await BudgetEntry.findOneAndDelete({ _id: entryId, tripId });
-    if (!entry) {
-      throw new AppError('Budget entry not found', 404);
-    }
+    await budgetService.deleteBudgetEntry(req.params.tripId, req.params.entryId, req.user._id);
 
     res.status(200).json({
       success: true,
@@ -126,13 +69,7 @@ export const getBudgetSummary = async (
   try {
     if (!req.user) throw new AppError('Unauthenticated', 401);
 
-    const { tripId } = req.params;
-
-    // 1. Verify access and get planned budget
-    const trip = await verifyTripAccess(tripId, req.user._id);
-
-    // 2. Calculate summary
-    const summary = await budgetService.calculateBudgetSummary(trip._id, trip.budget);
+    const summary = await budgetService.getBudgetSummary(req.params.tripId, req.user._id);
 
     res.status(200).json({
       success: true,

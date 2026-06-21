@@ -9,7 +9,8 @@
  * and parses/renders Markdown text output into responsive cards.
  */
 
-import { useEffect, useState, useCallback, Suspense } from 'react';
+import { useEffect, useState, useCallback, Suspense, useRef } from 'react';
+
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
@@ -153,10 +154,20 @@ function AIPlannerContent() {
   const [budget, setBudget] = useState('15000');
   const [duration, setDuration] = useState(5);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [isSlowWarning, setIsSlowWarning] = useState(false);
+  const slowTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+
+  // Get parameters from URL
+  const preselectedDuration = searchParams.get('duration');
+  const preselectedBudget = searchParams.get('budget');
 
   useEffect(() => {
     initialize();
-  }, [initialize]);
+    if (preselectedDestId) setDestinationId(preselectedDestId);
+    if (preselectedDuration) setDuration(Number(preselectedDuration) || 5);
+    if (preselectedBudget) setBudget(preselectedBudget);
+  }, [initialize, preselectedDestId, preselectedDuration, preselectedBudget]);
 
   // Load destinations & history plans
   const fetchInitialData = useCallback(async () => {
@@ -229,7 +240,11 @@ function AIPlannerContent() {
     }
 
     setIsGenerating(true);
+    setIsSlowWarning(false);
+    // Show slow-connection warning after 12 seconds
+    slowTimerRef.current = setTimeout(() => setIsSlowWarning(true), 12000);
     try {
+
       const res = await api.post('/ai/generate', {
         destinationId,
         budget: numBudget,
@@ -252,7 +267,10 @@ function AIPlannerContent() {
       }
     } finally {
       setIsGenerating(false);
+      setIsSlowWarning(false);
+      if (slowTimerRef.current) clearTimeout(slowTimerRef.current);
     }
+
   };
 
   // Convert AI plan to editable Trip Form prefills
@@ -480,12 +498,31 @@ function AIPlannerContent() {
             {isGenerating ? (
               /* Loading Screen */
               <div className="flex-grow flex flex-col justify-center items-center py-20 text-center">
-                <Loader2 className="h-12 w-12 text-teal-400 animate-spin" />
-                <h4 className="mt-4 text-base font-bold text-white">Synthesizing Spot Coordinates</h4>
+                <div className="relative mb-6">
+                  <div className="h-16 w-16 rounded-full border-4 border-teal-500/30 border-t-teal-400 animate-spin mx-auto" />
+                  <Sparkles className="absolute inset-0 m-auto h-6 w-6 text-teal-400" />
+                </div>
+                <h4 className="text-base font-bold text-white">Crafting Your Itinerary</h4>
                 <p className="mt-2 text-xs text-slate-400 max-w-xs leading-relaxed">
-                  Our Indian travel expert agent is budgeting category splits, maps, stays, and activities for your DNA.
+                  Our AI is mapping out stays, activities &amp; budget splits tailored for your trip.
                 </p>
+                {/* Step indicators */}
+                <div className="mt-6 flex flex-col gap-2 text-left w-full max-w-xs">
+                  {['Analyzing destination data', 'Building day-by-day schedule', 'Optimizing for your budget'].map((step, i) => (
+                    <div key={i} className="flex items-center gap-2 text-xs">
+                      <div className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${i === 0 ? 'bg-teal-400 animate-pulse' : 'bg-slate-700'}`} />
+                      <span className={i === 0 ? 'text-slate-300' : 'text-slate-600'}>{step}</span>
+                    </div>
+                  ))}
+                </div>
+                {isSlowWarning && (
+                  <div className="mt-6 flex items-center gap-2 rounded-lg bg-amber-500/10 border border-amber-500/20 px-4 py-2.5 text-xs text-amber-400 max-w-xs">
+                    <Clock className="h-4 w-4 flex-shrink-0" />
+                    <span>AI is taking longer than usual. Please wait — still working…</span>
+                  </div>
+                )}
               </div>
+
             ) : selectedPlan ? (
               /* Plan Active Display */
               <div className="flex flex-col h-full justify-between">

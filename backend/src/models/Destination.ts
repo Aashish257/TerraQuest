@@ -24,7 +24,10 @@ export interface IDestination extends Document {
   activities: string[];
   images: string[];
   featured: boolean;
+  status: 'pending' | 'approved' | 'rejected';
+  submittedBy?: mongoose.Types.ObjectId;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 const DestinationSchema = new Schema<IDestination>(
@@ -71,16 +74,27 @@ const DestinationSchema = new Schema<IDestination>(
       type: Boolean,
       default: false,
     },
+    status: {
+      type: String,
+      enum: {
+        values: ['pending', 'approved', 'rejected'],
+        message: 'Status must be pending, approved, or rejected',
+      },
+      default: 'approved',
+    },
+    submittedBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+    },
   },
   {
-    // Only track createdAt — destinations don't get updated often
-    timestamps: { createdAt: true, updatedAt: false },
+    timestamps: true,
   }
 );
 
 // ─── Indexes ─────────────────────────────────────────────────────────────────
 // Text index: powers ?search=goa on GET /destinations
-// MongoDB text search is case-insensitive by default
+// Case-insensitive text search by default
 DestinationSchema.index({ name: 'text', activities: 'text' });
 
 // Country: for filtering by country (future international expansion)
@@ -88,5 +102,11 @@ DestinationSchema.index({ country: 1 });
 
 // Featured: for quick homepage "featured destinations" query
 DestinationSchema.index({ featured: 1 });
+
+// Status: for filtering approved destinations
+DestinationSchema.index({ status: 1 });
+
+// SubmittedBy: query destinations contributed by a guide
+DestinationSchema.index({ submittedBy: 1 });
 
 export default mongoose.model<IDestination>('Destination', DestinationSchema);

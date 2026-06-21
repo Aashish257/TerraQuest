@@ -9,9 +9,9 @@
  * Saves session variables in Zustand store on success, redirects to explore view.
  */
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -33,8 +33,9 @@ const registerSchema = z.object({
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const login = useAuthStore((state) => state.login);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -67,15 +68,29 @@ export default function RegisterPage() {
       
       // Save in Zustand and localStorage
       login(user, token);
-      
-      // Redirect to destinations view
-      router.push('/destinations');
+
+      // Role-based redirect: guides complete profile, others explore
+      const redirectTo = searchParams.get('redirect');
+      if (redirectTo) {
+        router.push(redirectTo);
+      } else if (user.role === 'guide') {
+        router.push('/become-guide');
+      } else if (user.role === 'admin') {
+        router.push('/admin/dashboard');
+      } else {
+        router.push('/destinations');
+      }
     } catch (err: any) {
-      const msg = err.response?.data?.message || 'Registration failed. Please try again.';
+      const msg =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.message ||
+        'Registration failed. Please try again.';
       setErrorMsg(msg);
     } finally {
       setIsLoading(false);
     }
+
   };
 
   return (
@@ -222,5 +237,17 @@ export default function RegisterPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-slate-950">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-teal-500 border-t-transparent" />
+      </div>
+    }>
+      <RegisterForm />
+    </Suspense>
   );
 }

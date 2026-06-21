@@ -8,15 +8,15 @@
  * Saves session variables in Zustand store on success, redirects to explore view.
  */
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2, Shield } from 'lucide-react';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Please provide a valid email address' }),
@@ -25,8 +25,9 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const login = useAuthStore((state) => state.login);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -53,9 +54,18 @@ export default function LoginPage() {
       
       // Save in Zustand and localStorage
       login(user, token);
-      
-      // Redirect to destinations view
-      router.push('/destinations');
+
+      // Check for a ?redirect param first, then fall back to role-based defaults
+      const redirectTo = searchParams.get('redirect');
+      if (redirectTo) {
+        router.push(redirectTo);
+      } else if (user.role === 'guide') {
+        router.push('/guide/dashboard');
+      } else if (user.role === 'admin') {
+        router.push('/admin/dashboard');
+      } else {
+        router.push('/destinations');
+      }
     } catch (err: any) {
       const msg = err.response?.data?.message || 'Login failed. Please check your credentials.';
       setErrorMsg(msg);
@@ -155,7 +165,30 @@ export default function LoginPage() {
           </Link>
         </div>
 
+        {/* Admin access note */}
+        <div className="flex items-center justify-center gap-1.5 pt-1">
+          <Shield className="h-3 w-3 text-slate-600" />
+          <span className="text-xs text-slate-600">
+            Admin?{' '}
+            <Link href="/login?redirect=/admin/dashboard" className="text-slate-500 hover:text-slate-400 underline underline-offset-2 transition-colors">
+              Access Admin Panel
+            </Link>
+          </span>
+        </div>
+
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-slate-950">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-teal-500 border-t-transparent" />
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }
