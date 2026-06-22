@@ -9,28 +9,20 @@ Built using a modern glassmorphic aesthetic, the project features a decoupled ar
 ## 📸 Interface Showcases
 
 ### 1. Welcome Landing Page
-Sleek, dark glassmorphic design featuring glowing background gradients, interactive CTA buttons, and structured feature outlines.
-![Landing Page](screenshots/logged_out_homepage_1781754401149.png)
+Sleek, dark glassmorphic design featuring glowing ambient backgrounds, curating active destinations list, and parameter pre-population widgets.
+![Landing Page](screenshots/landing_page.png)
 
-### 2. Multi-Role Authentication
-Interactive, validated signup panel with quick Traveler vs. Local Guide role toggle buttons.
-![Authentication Sign Up](screenshots/registration_form_filled_1781754342572.png)
+### 2. Explore & Discover Board
+Searchable destination cards leveraging Mongoose text indexing, quick tags filter, and budget tier queries.
+![Explore Destinations](screenshots/explore_destinations.png)
 
-### 3. Explore & Discover Board
-Searchable destination grid leveraging Mongoose text search indexes, filtering by activities, and budget brackets.
-![Explore Destinations](screenshots/destinations_list_1781755062171.png)
+### 3. AI Itinerary Planner
+A parameters-wizard harnessing the **Google Gemini API** (`gemini-1.5-flash`) to draft customized daily itineraries, complete with responsive overlay notices and saved plan log histories.
+![AI Itinerary Planner](screenshots/ai_planner_wizard.png)
 
-### 4. AI Itinerary Planner
-A prompt-wizard leveraging GPT-4o-mini to draft daily travel schedules, lodging suggestions, and budget estimates, complete with a saved plans history log and instant "Convert to Trip" actions.
-![AI Itinerary Planner](screenshots/ai_planner_full_page_1781789635294.png)
-
-### 5. Expense Logger & Budget Analytics
-HSL color-coded metrics dashboard charting planned vs spent budgets, progress indicators, category breakdown meters, and live logs.
-![Budget Dashboard](screenshots/final_budget_status_1781757158307.png)
-
-### 6. Group Travel details & Invites
-Shared trip dashboards detailing schedules, budget sums, and a member list for inviting active travelers.
-![Trip Details Panel](screenshots/trip_details_page_verified_1781808819826.png)
+### 4. My Trips & Expense Tracker
+Collaborative travel dashboards detailing schedules, active members list, and nested budget entry logging.
+![My Trips](screenshots/my_trips.png)
 
 ---
 
@@ -51,7 +43,7 @@ Shared trip dashboards detailing schedules, budget sums, and a member list for i
 *   **Validation**: Zod (runtime env and payload parsing)
 *   **Security & Auth**: JWT, bcrypt password hashing
 *   **Testing**: Jest, Supertest, MongoDB Memory Server
-*   **AI Service**: OpenAI API SDK
+*   **AI Service**: Google Generative AI SDK (Gemini API)
 
 ### Frontend App
 *   **Core**: Next.js 14 (App Router), React 18, TypeScript, TailwindCSS
@@ -96,7 +88,7 @@ TerraQuest/
 ### Prerequisites
 *   Node.js (v20 or higher)
 *   MongoDB local instance or Atlas URI
-*   OpenAI API Key
+*   Google Gemini API Key
 
 ### Backend Setup
 1. Navigate to the backend directory:
@@ -115,11 +107,12 @@ TerraQuest/
    JWT_SECRET=your_super_secret_jwt_key_here
    JWT_EXPIRES_IN=7d
    FRONTEND_URL=http://localhost:3000
-   OPENAI_API_KEY=your_openai_api_key_here
+   GEMINI_API_KEY=your_gemini_api_key_here
    ```
-4. Seed the destinations database:
+4. Seed the destinations database and administrative default account:
    ```bash
    npm run seed
+   npm run seed:admin
    ```
 5. Run in development mode:
    ```bash
@@ -157,8 +150,8 @@ cd backend
 npm test
 ```
 
-Currently, **85/85 tests are passing successfully**:
-*   **Auth Services & Endpoints**: User registrations, JWT logins, and profile lookups.
+Currently, **90/90 tests are passing successfully**:
+*   **Auth Services & Endpoints**: User registrations, JWT cookie logins, and administrative lookups.
 *   **Trips & Budget Aggregations**: Mathematical spent vs remaining calculations.
 *   **Polymorphic Reviews**: Ratings aggregation and Guide average rating updates.
-*   **AI Planner API**: GPT plan requests and fallback generation schema controls.
+*   **AI Planner API**: Gemini plan requests and fallback generation schema controls.
