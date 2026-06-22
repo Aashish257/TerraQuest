@@ -1,16 +1,15 @@
 /**
  * ai.service.ts — AI Travel Itinerary generator service
  *
- * Connects to OpenAI API to request prompt-driven custom itineraries.
+ * Connects to Google Gemini API to request prompt-driven custom itineraries.
  * Features an offline/fallback dynamic generation logic for seamless local testing.
  */
 
-import OpenAI from 'openai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { env } from '../config/env';
 
-// Initialize the OpenAI client.
-// Uses configured env variable or dummy key to prevent startup errors.
-const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY || 'dummy_key' });
+// Initialize the Google Generative AI client.
+const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY || 'dummy_key');
 
 export interface GeneratePlanInput {
   destinationName: string;
@@ -20,7 +19,7 @@ export interface GeneratePlanInput {
 }
 
 /**
- * Helper to generate a realistic mock travel plan if OpenAI is unavailable or keyless.
+ * Helper to generate a realistic mock travel plan if Gemini is unavailable or keyless.
  */
 const generateMockTravelPlan = (input: GeneratePlanInput): string => {
   const interestList = input.interests.join(', ');
@@ -85,14 +84,14 @@ const generateMockTravelPlan = (input: GeneratePlanInput): string => {
 };
 
 /**
- * Generates an itinerary via OpenAI, or falls back to mock itinerary if key is missing/dummy.
+ * Generates an itinerary via Gemini, or falls back to mock itinerary if key is missing/dummy.
  */
 export const generateTravelPlan = async (input: GeneratePlanInput): Promise<string> => {
-  const apiKey = process.env.OPENAI_API_KEY || env.OPENAI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY || env.GEMINI_API_KEY;
 
   // If simulated failure requested in tests:
   if (apiKey === 'mock_key_fail') {
-    throw new Error('OpenAI API connection failed: Mock failure');
+    throw new Error('Gemini API connection failed: Mock failure');
   }
 
   // Fallback to offline mock mode if no API key is loaded
@@ -121,21 +120,23 @@ Format clearly with Day 1, Day 2... headers.
 `;
 
   try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 1500,
-      temperature: 0.7,
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const response = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
+        maxOutputTokens: 1500,
+        temperature: 0.7,
+      },
     });
 
-    const plan = response.choices[0]?.message?.content;
+    const plan = response.response?.text?.();
     if (!plan) {
-      throw new Error('OpenAI returned empty response');
+      throw new Error('Gemini returned empty response');
     }
 
     return plan;
   } catch (err: any) {
     // Re-throw so controller can report it as a 503
-    throw new Error(`OpenAI API Failure: ${err.message}`);
+    throw new Error(`Gemini API Failure: ${err.message}`);
   }
 };

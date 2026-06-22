@@ -20,11 +20,11 @@ describe('AI Planner API Integration Tests', () => {
   let originalKey: string | undefined;
 
   beforeAll(() => {
-    originalKey = process.env.OPENAI_API_KEY;
+    originalKey = process.env.GEMINI_API_KEY;
   });
 
   afterAll(() => {
-    process.env.OPENAI_API_KEY = originalKey;
+    process.env.GEMINI_API_KEY = originalKey;
   });
 
   beforeEach(async () => {
@@ -46,7 +46,7 @@ describe('AI Planner API Integration Tests', () => {
     destinationId = dest._id.toString();
 
     // Reset API key to default dummy if not present
-    process.env.OPENAI_API_KEY = 'dummy_key';
+    process.env.GEMINI_API_KEY = 'dummy_key';
   });
 
   describe('POST /api/ai/generate', () => {
@@ -112,9 +112,9 @@ describe('AI Planner API Integration Tests', () => {
       expect(res3.status).toBe(400);
     });
 
-    it('API-AI-003: returns 503 when OpenAI service fails', async () => {
+    it('API-AI-003: returns 503 when Gemini service fails', async () => {
       // Set mock failure key
-      process.env.OPENAI_API_KEY = 'mock_key_fail';
+      process.env.GEMINI_API_KEY = 'mock_key_fail';
 
       const res = await request(app)
         .post('/api/ai/generate')

@@ -22,7 +22,7 @@ export const generateAndSavePlan = async (userId: string, data: any) => {
     });
   } catch (err: any) {
     logger.error({ err }, 'AI Service Error');
-    if (err.message?.includes('OpenAI')) {
+    if (err.message?.includes('OpenAI') || err.message?.includes('Gemini')) {
       throw new AppError('AI service unavailable', 503);
     }
     throw err;
