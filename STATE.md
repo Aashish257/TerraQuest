@@ -93,6 +93,9 @@
 - [x] Overwrite the registration page with the custom path-selector style template.
 - [x] Restructure layouts to hide global navbar and footer on auth pages and keep forms within the viewport.
 - [x] Add a top-right corner glassmorphic exit button on login and registration pages to return to home.
+- [x] Resolve React useEffect authentication redirect loops on My Trips list, Trip details, and Budget tracker pages.
+- [x] Implement high-fidelity pulsing shimmer skeletons replacing fullscreen viewport-blocking loading spinners.
+- [x] Create automated Playwright E2E browser test script verifying the login, loop-monitoring, and trip creation flow.
 
 ## Active Tasks
 - None
