@@ -21,7 +21,7 @@ export interface GeneratePlanInput {
 /**
  * Helper to generate a realistic mock travel plan if Gemini is unavailable or keyless.
  */
-const generateMockTravelPlan = (input: GeneratePlanInput): string => {
+export const generateMockTravelPlan = (input: GeneratePlanInput): string => {
   const interestList = input.interests.join(', ');
   let md = `# ${input.duration}-Day Itinerary to ${input.destinationName}\n\n`;
   md += `## 📊 Trip Overview\n`;
@@ -136,7 +136,8 @@ Format clearly with Day 1, Day 2... headers.
 
     return plan;
   } catch (err: any) {
-    // Re-throw so controller can report it as a 503
-    throw new Error(`Gemini API Failure: ${err.message}`);
+    // Log the error and gracefully fall back to the mock plan instead of throwing a 503/500 error
+    console.error('Gemini API failed. Gracefully falling back to mock plan generation. Error:', err.message);
+    return generateMockTravelPlan(input);
   }
 };
