@@ -26,8 +26,13 @@ export default function Header() {
     initialize();
   }, [initialize]);
 
-  // Hide header entirely on guide/admin workspace pages — those layouts handle their own navigation
-  if (pathname.startsWith('/guide/') || pathname.startsWith('/admin/')) {
+  // Hide header entirely on guide/admin workspace pages, and auth pages — those handle their own layout
+  if (
+    pathname.startsWith('/guide/') ||
+    pathname.startsWith('/admin/') ||
+    pathname === '/login' ||
+    pathname === '/register'
+  ) {
     return null;
   }
 

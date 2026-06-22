@@ -26,6 +26,7 @@ export interface IUser extends Document {
   location?: string;
   travelDNA: string[];
   isActive: boolean;
+  lastLogin?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -82,6 +83,9 @@ const UserSchema = new Schema<IUser>(
       type: Boolean,
       default: true,
     },
+    lastLogin: {
+      type: Date,
+    },
   },
   {
     // timestamps: true automatically adds createdAt and updatedAt fields
@@ -96,6 +100,7 @@ const UserSchema = new Schema<IUser>(
 UserSchema.index({ role: 1 });
 // CreatedAt: for sorting newest users
 UserSchema.index({ createdAt: -1 });
+UserSchema.index({ lastLogin: -1 });
 
 
 

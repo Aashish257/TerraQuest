@@ -82,12 +82,23 @@
 - [x] Integrated high-fidelity dark-themed landing page UI with interactive AI planning widget, Curated Destinations showcase, and credentials metrics.
 - [x] Bound hero planner widget parameters to prefill the AI Planner form wizard workspace automatically.
 - [x] Ran frontend production build compilation checking routing paths with 0 errors.
+- [x] Implement `lastLogin` login timestamp tracking in the User model and database index.
+- [x] Implement administrative user management endpoints for listing, status toggles, and role updates.
+- [x] Add backend integration tests verifying administrative access control and self-modification restrictions.
+- [x] Create a premium dark-themed glassmorphic user management dashboard page under `/admin/users`.
+- [x] Validate frontend compilation and backend integration test suite with 90/90 passing assertions.
+- [x] Fix frontend Next.js ESLint unescaped entities in `app/(dashboard)/admin/guide-requests/page.tsx` and `app/(dashboard)/guides/page.tsx`.
+- [x] Run full project deployment audit and document environment setup checks and security assessment.
+- [x] Overwrite the login page with the light-glassmorphic style template.
+- [x] Overwrite the registration page with the custom path-selector style template.
+- [x] Restructure layouts to hide global navbar and footer on auth pages and keep forms within the viewport.
+- [x] Add a top-right corner glassmorphic exit button on login and registration pages to return to home.
 
 ## Active Tasks
 - None
 
 ## Next Task
-- Restart development server and begin manual checks of the interactive planner flow.
+- Deploy staging/production environment databases and services.
 
 ## Future Roadmap
 - Deployed production pipeline E2E testing

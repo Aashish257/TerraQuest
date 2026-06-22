@@ -61,3 +61,78 @@ export const getUserById = async (
     next(err);
   }
 };
+
+export const getAllUsers = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const users = await userService.getAllUsers();
+    res.status(200).json({
+      success: true,
+      users,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const updateUserStatus = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) {
+      throw new AppError('Unauthenticated', 401);
+    }
+    const { isActive } = req.body;
+    if (typeof isActive !== 'boolean') {
+      throw new AppError('isActive must be a boolean value', 400);
+    }
+
+    const user = await userService.updateUserStatus(
+      req.params.id,
+      req.user._id,
+      isActive
+    );
+
+    res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const updateUserRole = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) {
+      throw new AppError('Unauthenticated', 401);
+    }
+    const { role } = req.body;
+    if (role !== 'traveler' && role !== 'guide' && role !== 'admin') {
+      throw new AppError('role must be traveler, guide, or admin', 400);
+    }
+
+    const user = await userService.updateUserRole(
+      req.params.id,
+      req.user._id,
+      role
+    );
+
+    res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+

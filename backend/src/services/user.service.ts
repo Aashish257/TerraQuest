@@ -43,3 +43,48 @@ export const getUserById = async (userId: string) => {
     createdAt: user.createdAt,
   };
 };
+
+export const getAllUsers = async () => {
+  return userRepository.find(
+    {},
+    'name email role avatar bio location isActive lastLogin createdAt updatedAt',
+    { sort: { createdAt: -1 } }
+  );
+};
+
+export const updateUserStatus = async (targetUserId: string, requestingAdminId: string, isActive: boolean) => {
+  if (targetUserId === requestingAdminId) {
+    throw new AppError('Forbidden: You cannot deactivate your own account', 400);
+  }
+
+  const updatedUser = await userRepository.updateById(
+    targetUserId,
+    { $set: { isActive } },
+    { new: true, runValidators: true }
+  );
+
+  if (!updatedUser) {
+    throw new AppError('User not found', 404);
+  }
+
+  return updatedUser;
+};
+
+export const updateUserRole = async (targetUserId: string, requestingAdminId: string, role: 'traveler' | 'guide' | 'admin') => {
+  if (targetUserId === requestingAdminId) {
+    throw new AppError('Forbidden: You cannot change your own role', 400);
+  }
+
+  const updatedUser = await userRepository.updateById(
+    targetUserId,
+    { $set: { role } },
+    { new: true, runValidators: true }
+  );
+
+  if (!updatedUser) {
+    throw new AppError('User not found', 404);
+  }
+
+  return updatedUser;
+};
+

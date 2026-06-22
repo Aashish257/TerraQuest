@@ -8,13 +8,18 @@
  * Note: jest globals (describe, it, beforeAll) are NOT available here.
  */
 
+process.env.MONGOMS_STARTUP_TIMEOUT = '60000';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 
 // @ts-ignore — global is available in Node
 declare const global: typeof globalThis & { __MONGO_SERVER__: MongoMemoryServer };
 
 export default async function globalSetup() {
-  const mongoServer = await MongoMemoryServer.create();
+  const mongoServer = await MongoMemoryServer.create({
+    instance: {
+      launchTimeout: 60000,
+    },
+  });
   const mongoUri = mongoServer.getUri();
 
   // Store on global so globalTeardown can stop it

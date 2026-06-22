@@ -42,6 +42,7 @@ export const registerUser = async (data: any) => {
     email,
     password: hashedPassword,
     role,
+    lastLogin: new Date(),
   });
 
   // 4. Generate token
@@ -83,6 +84,9 @@ export const loginUser = async (data: any) => {
 
   // 4. Generate token
   const token = generateToken(user);
+
+  // Update last login timestamp
+  await userRepository.updateOne({ _id: user._id }, { $set: { lastLogin: new Date() } });
 
   // Return token and user details without password
   const userResponse = {

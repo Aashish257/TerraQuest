@@ -303,7 +303,7 @@ export default function AdminGuideRequestsPage() {
                       {/* Row 3: message */}
                       {req.message && (
                         <p className="text-sm text-slate-400 bg-slate-950/40 rounded-lg px-3 py-2 border border-white/5 italic">
-                          "{req.message}"
+                          &ldquo;{req.message}&rdquo;
                         </p>
                       )}
                     </div>

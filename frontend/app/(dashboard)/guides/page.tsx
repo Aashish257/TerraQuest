@@ -410,7 +410,7 @@ export default function LocalGuidesPage() {
             </span>
           </h1>
           <p className="mt-3 text-slate-400 max-w-lg">
-            Connect with experienced local guides who know India's hidden trails, secret spots, and cultural gems — and book them for your next trip.
+            Connect with experienced local guides who know India&apos;s hidden trails, secret spots, and cultural gems — and book them for your next trip.
           </p>
           {!isLoading && (
             <p className="mt-2 text-xs text-slate-500">

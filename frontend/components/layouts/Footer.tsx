@@ -13,8 +13,13 @@ import { usePathname } from 'next/navigation';
 export default function Footer() {
   const pathname = usePathname();
 
-  // No footer on guide or admin workspace pages
-  if (pathname.startsWith('/guide/') || pathname.startsWith('/admin/')) {
+  // No footer on guide/admin workspace pages, or auth pages
+  if (
+    pathname.startsWith('/guide/') ||
+    pathname.startsWith('/admin/') ||
+    pathname === '/login' ||
+    pathname === '/register'
+  ) {
     return null;
   }
 
