@@ -65,7 +65,7 @@ export default function TripDetailsPage() {
   const router = useRouter();
   const tripId = params.id as string;
 
-  const { isAuthenticated, user, initialize } = useAuthStore();
+  const { isAuthenticated, user, initialize, isLoading: isAuthLoading } = useAuthStore();
   const [trip, setTrip] = useState<Trip | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -128,12 +128,13 @@ export default function TripDetailsPage() {
   }, [tripId, router]);
 
   useEffect(() => {
+    if (isAuthLoading) return;
     if (isAuthenticated) {
       fetchTripDetails();
-    } else if (!isLoading) {
+    } else {
       router.push('/login');
     }
-  }, [isAuthenticated, fetchTripDetails, router, isLoading]);
+  }, [isAuthenticated, fetchTripDetails, router, isAuthLoading]);
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -245,11 +246,77 @@ export default function TripDetailsPage() {
     }
   };
 
+  if (isAuthLoading) {
+    return (
+      <div className="flex-grow flex flex-col justify-center items-center py-20 bg-slate-950/85 backdrop-blur-md">
+        <div className="relative">
+          <div className="absolute -inset-4 rounded-full bg-teal-500/20 blur-lg animate-pulse" />
+          <Loader2 className="relative h-12 w-12 text-teal-400 animate-spin" />
+        </div>
+        <p className="mt-6 text-sm font-semibold tracking-wide text-slate-400 animate-pulse">
+          Initializing secure session...
+        </p>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
-      <div className="flex-grow flex flex-col justify-center items-center py-20 bg-slate-950">
-        <Loader2 className="h-10 w-10 text-teal-500 animate-spin" />
-        <p className="mt-4 text-sm text-slate-500">Loading trip details...</p>
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 w-full flex-grow flex flex-col justify-start">
+        {/* Back link */}
+        <div className="mb-6">
+          <div className="h-4 w-28 bg-slate-800 rounded animate-pulse" />
+        </div>
+
+        {/* Main Grid: Trip Summary Details & Members Panel */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+          {/* Left 2 Cols: Trip Info card & quick stats */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="rounded-2xl border border-white/5 bg-slate-900/40 p-6 sm:p-8 shadow-2xl backdrop-blur-md relative overflow-hidden">
+              <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-teal-500/5 blur-3xl" />
+              
+              <div className="flex flex-col space-y-4">
+                <div className="flex items-center space-x-3">
+                  <div className="h-5 w-16 bg-slate-800 rounded animate-pulse" />
+                  <div className="h-4 w-20 bg-slate-800 rounded animate-pulse" />
+                </div>
+                <div className="h-8 w-2/3 bg-slate-800 rounded animate-pulse" />
+                <div className="h-5 w-1/3 bg-slate-800 rounded animate-pulse" />
+              </div>
+
+              <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-6 border-t border-white/5 pt-6">
+                <div className="flex items-start space-x-3">
+                  <div className="h-10 w-10 bg-slate-800 rounded-lg animate-pulse" />
+                  <div className="space-y-2 flex-grow">
+                    <div className="h-3 w-12 bg-slate-800 rounded animate-pulse" />
+                    <div className="h-4 w-24 bg-slate-800 rounded animate-pulse" />
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="h-10 w-10 bg-slate-800 rounded-lg animate-pulse" />
+                  <div className="space-y-2 flex-grow">
+                    <div className="h-3 w-24 bg-slate-800 rounded animate-pulse" />
+                    <div className="h-5 w-20 bg-slate-800 rounded animate-pulse" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-8 rounded-xl bg-slate-800/10 border border-white/5 p-6 h-28 animate-pulse" />
+            </div>
+          </div>
+
+          {/* Right Col: Group Members Panel */}
+          <div className="space-y-6">
+            <div className="rounded-2xl border border-white/5 bg-slate-900/40 p-6 shadow-2xl backdrop-blur-md space-y-4">
+              <div className="h-6 w-24 bg-slate-800 rounded animate-pulse" />
+              <div className="space-y-3">
+                <div className="h-10 bg-slate-800 rounded animate-pulse" />
+                <div className="h-10 bg-slate-800 rounded animate-pulse" />
+                <div className="h-10 bg-slate-800 rounded animate-pulse" />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

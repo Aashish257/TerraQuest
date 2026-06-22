@@ -33,7 +33,7 @@ interface Trip {
 
 export default function TripsPage() {
   const router = useRouter();
-  const { isAuthenticated, user, initialize } = useAuthStore();
+  const { isAuthenticated, user, initialize, isLoading: isAuthLoading } = useAuthStore();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [activeTab, setActiveTab] = useState<'all' | 'solo' | 'group'>('all');
   const [isLoading, setIsLoading] = useState(true);
@@ -66,12 +66,13 @@ export default function TripsPage() {
   }, [router]);
 
   useEffect(() => {
+    if (isAuthLoading) return;
     if (isAuthenticated) {
       fetchTrips();
-    } else if (!isLoading) {
+    } else {
       router.push('/login');
     }
-  }, [isAuthenticated, fetchTrips, router, isLoading]);
+  }, [isAuthenticated, fetchTrips, router, isAuthLoading]);
 
   // Filter trips based on active tab
   const filteredTrips = trips.filter((trip) => {
@@ -102,11 +103,16 @@ export default function TripsPage() {
     }
   };
 
-  if (isLoading) {
+  if (isAuthLoading) {
     return (
-      <div className="flex-grow flex flex-col justify-center items-center py-20 bg-slate-950">
-        <Loader2 className="h-10 w-10 text-teal-500 animate-spin" />
-        <p className="mt-4 text-sm text-slate-500">Loading your trips...</p>
+      <div className="flex-grow flex flex-col justify-center items-center py-20 bg-slate-950/85 backdrop-blur-md">
+        <div className="relative">
+          <div className="absolute -inset-4 rounded-full bg-teal-500/20 blur-lg animate-pulse" />
+          <Loader2 className="relative h-12 w-12 text-teal-400 animate-spin" />
+        </div>
+        <p className="mt-6 text-sm font-semibold tracking-wide text-slate-400 animate-pulse">
+          Initializing secure session...
+        </p>
       </div>
     );
   }
@@ -170,6 +176,26 @@ export default function TripsPage() {
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <AlertCircle className="h-10 w-10 text-rose-500" />
             <p className="mt-4 text-slate-300 text-sm font-semibold">{errorMsg}</p>
+          </div>
+        ) : isLoading ? (
+          /* Pulsing Card Skeletons */
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((n) => (
+              <div
+                key={n}
+                className="rounded-2xl border border-white/5 bg-slate-900/40 p-6 shadow-2xl backdrop-blur-md h-48 animate-pulse flex flex-col justify-between"
+              >
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <div className="h-4 w-20 bg-slate-800 rounded animate-pulse" />
+                    <div className="h-4 w-12 bg-slate-800 rounded animate-pulse" />
+                  </div>
+                  <div className="h-6 w-3/4 bg-slate-800 rounded mt-4 animate-pulse" />
+                  <div className="h-4 w-1/2 bg-slate-800 rounded animate-pulse" />
+                </div>
+                <div className="h-4 w-1/3 bg-slate-800 rounded mt-4 animate-pulse" />
+              </div>
+            ))}
           </div>
         ) : filteredTrips.length === 0 ? (
           /* Empty Trips Layout */

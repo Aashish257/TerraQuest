@@ -65,7 +65,7 @@ export default function BudgetTrackerPage() {
   const router = useRouter();
   const tripId = params.id as string;
 
-  const { isAuthenticated, initialize } = useAuthStore();
+  const { isAuthenticated, initialize, isLoading: isAuthLoading } = useAuthStore();
   const [trip, setTrip] = useState<Trip | null>(null);
   const [entries, setEntries] = useState<BudgetEntry[]>([]);
   const [summary, setSummary] = useState<BudgetSummary | null>(null);
@@ -120,12 +120,13 @@ export default function BudgetTrackerPage() {
   }, [tripId, router]);
 
   useEffect(() => {
+    if (isAuthLoading) return;
     if (isAuthenticated) {
       fetchBudgetData();
-    } else if (!isLoading) {
+    } else {
       router.push('/login');
     }
-  }, [isAuthenticated, fetchBudgetData, router, isLoading]);
+  }, [isAuthenticated, fetchBudgetData, router, isAuthLoading]);
 
   const handleAddExpense = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -195,11 +196,49 @@ export default function BudgetTrackerPage() {
     });
   };
 
+  if (isAuthLoading) {
+    return (
+      <div className="flex-grow flex flex-col justify-center items-center py-20 bg-slate-950/85 backdrop-blur-md">
+        <div className="relative">
+          <div className="absolute -inset-4 rounded-full bg-teal-500/20 blur-lg animate-pulse" />
+          <Loader2 className="relative h-12 w-12 text-teal-400 animate-spin" />
+        </div>
+        <p className="mt-6 text-sm font-semibold tracking-wide text-slate-400 animate-pulse">
+          Initializing secure session...
+        </p>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
-      <div className="flex-grow flex flex-col justify-center items-center py-20 bg-slate-950">
-        <Loader2 className="h-10 w-10 text-teal-500 animate-spin" />
-        <p className="mt-4 text-sm text-slate-500">Loading budget tracker...</p>
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 w-full flex-grow flex flex-col justify-start">
+        {/* Back link */}
+        <div className="mb-6">
+          <div className="h-4 w-32 bg-slate-800 rounded animate-pulse" />
+        </div>
+
+        {/* Header and Summary stats */}
+        <div className="flex flex-col space-y-2">
+          <div className="h-9 w-64 bg-slate-800 rounded animate-pulse" />
+          <div className="h-4 w-48 bg-slate-800 rounded animate-pulse" />
+        </div>
+
+        {/* Metric Cards Grid */}
+        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-3">
+          <div className="rounded-2xl border border-white/5 bg-slate-900/40 p-6 shadow-2xl backdrop-blur-md h-28 animate-pulse" />
+          <div className="rounded-2xl border border-white/5 bg-slate-900/40 p-6 shadow-2xl backdrop-blur-md h-28 animate-pulse" />
+          <div className="rounded-2xl border border-white/5 bg-slate-900/40 p-6 shadow-2xl backdrop-blur-md h-28 animate-pulse" />
+        </div>
+
+        {/* Budget Spending Progress Bar */}
+        <div className="mt-6 rounded-2xl border border-white/5 bg-slate-900/40 p-6 shadow-2xl backdrop-blur-md h-20 animate-pulse" />
+
+        {/* Category Breakdown & Inputs form Grid */}
+        <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+          <div className="rounded-2xl border border-white/5 bg-slate-900/40 p-6 shadow-2xl backdrop-blur-md h-64 animate-pulse" />
+          <div className="lg:col-span-2 rounded-2xl border border-white/5 bg-slate-900/40 p-6 shadow-2xl backdrop-blur-md h-64 animate-pulse" />
+        </div>
       </div>
     );
   }
