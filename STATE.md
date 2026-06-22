@@ -96,6 +96,8 @@
 - [x] Resolve React useEffect authentication redirect loops on My Trips list, Trip details, and Budget tracker pages.
 - [x] Implement high-fidelity pulsing shimmer skeletons replacing fullscreen viewport-blocking loading spinners.
 - [x] Create automated Playwright E2E browser test script verifying the login, loop-monitoring, and trip creation flow.
+- [x] Overhaul README.md layout to match Google Gemini AI stack, administrative setup seeder scripts, and actual Jest test counts.
+- [x] Exclude screenshots/ folder from .gitignore and add high-fidelity interface screenshots directly to the repository for GitHub public visibility.
 
 ## Active Tasks
 - None
