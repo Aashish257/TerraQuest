@@ -11,6 +11,7 @@
     "test:coverage": "jest --coverage --runInBand --detectOpenHandles",
     "seed": "ts-node src/seed/destinations.seed.ts",
     "seed:guides": "ts-node src/seed/guides.seed.ts",
+    "seed:admin": "ts-node src/seed/admin.seed.ts",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
