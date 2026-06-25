@@ -1,13 +1,18 @@
+'use client';
+
 /**
- * DestinationCard.tsx — Shared Destination Card Component
+ * DestinationCard.tsx — Premium 3D Tilt Spotlight Card
  *
- * Renders a card for a travel destination.
- * Displays title, location tags, budget range, activities tags, and a link to the details view.
- * Aesthetic features: Glowing borders, hover scaling, and clean tags.
+ * Skills applied:
+ * - Antigravity Design Expert: CSS 3D perspective tilt, glassmorphism refraction
+ * - Design Taste Frontend: spotlight border, no generic centered card
+ * - 3D Web Experience: CSS transform-style: preserve-3d hover tilt
+ * - Scroll Experience: stagger-ready (parent applies animation-delay via CSS)
  */
 
 import Link from 'next/link';
-import { MapPin, Calendar, Sparkles, Compass } from 'lucide-react';
+import { MapPin, Calendar, TrendingUp, Compass, Star } from 'lucide-react';
+import { useRef, useCallback } from 'react';
 
 export interface Destination {
   _id: string;
@@ -22,112 +27,188 @@ export interface Destination {
   featured: boolean;
 }
 
-// Image mappings for the seeded Indian destinations
 const DESTINATION_IMAGE_MAPPINGS: Record<string, string> = {
-  'Goa': 'https://images.unsplash.com/photo-1506461883276-594a12b11cc3?auto=format&fit=crop&w=600&q=80',
-  'Manali': 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=600&q=80',
-  'Ladakh': 'https://images.unsplash.com/photo-1596700445887-321287c88b03?auto=format&fit=crop&w=600&q=80',
-  'Jaipur': 'https://images.unsplash.com/photo-1477584322811-591f423e20de?auto=format&fit=crop&w=600&q=80',
-  'Coorg': 'https://images.unsplash.com/photo-1590001155093-a3c66ab0c3ff?auto=format&fit=crop&w=600&q=80',
-  'Munnar': 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=600&q=80',
-  'Pondicherry': 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=600&q=80',
-  'Rishikesh': 'https://images.unsplash.com/photo-1598977123418-45f04b01f4ac?auto=format&fit=crop&w=600&q=80',
-  'Udaipur': 'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=600&q=80',
-  'Meghalaya': 'https://images.unsplash.com/photo-1628155930542-3c7a64e2c833?auto=format&fit=crop&w=600&q=80',
+  'Goa':         'https://picsum.photos/seed/goa-beach-india/800/500',
+  'Manali':      'https://picsum.photos/seed/manali-snow/800/500',
+  'Ladakh':      'https://picsum.photos/seed/ladakh-mountains/800/500',
+  'Jaipur':      'https://picsum.photos/seed/jaipur-palace/800/500',
+  'Coorg':       'https://picsum.photos/seed/coorg-coffee/800/500',
+  'Munnar':      'https://picsum.photos/seed/munnar-tea/800/500',
+  'Pondicherry': 'https://picsum.photos/seed/pondicherry-beach/800/500',
+  'Rishikesh':   'https://picsum.photos/seed/rishikesh-ganges/800/500',
+  'Udaipur':     'https://picsum.photos/seed/udaipur-lake-palace/800/500',
+  'Meghalaya':   'https://picsum.photos/seed/meghalaya-waterfalls/800/500',
 };
 
 interface DestinationCardProps {
   destination: Destination;
+  index?: number;
 }
 
-export default function DestinationCard({ destination }: DestinationCardProps) {
-  const imageUrl = destination.images && destination.images.length > 0 
-    ? destination.images[0] 
-    : DESTINATION_IMAGE_MAPPINGS[destination.name] || '';
+export default function DestinationCard({ destination, index = 0 }: DestinationCardProps) {
+  const cardRef   = useRef<HTMLDivElement>(null);
+  const wrapRef   = useRef<HTMLDivElement>(null);
+
+  const imageUrl = destination.images?.length > 0
+    ? destination.images[0]
+    : DESTINATION_IMAGE_MAPPINGS[destination.name]
+      || `https://picsum.photos/seed/${encodeURIComponent(destination.name)}/800/500`;
+
+  // 3D tilt on mouse move (CSS custom properties for GPU-accelerated transform)
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current || !wrapRef.current) return;
+    const rect   = wrapRef.current.getBoundingClientRect();
+    const cx     = rect.left + rect.width / 2;
+    const cy     = rect.top  + rect.height / 2;
+    const dx     = (e.clientX - cx) / (rect.width  / 2);
+    const dy     = (e.clientY - cy) / (rect.height / 2);
+    const rotY   =  dx * 6;
+    const rotX   = -dy * 4;
+    cardRef.current.style.transform = `perspective(1000px) rotateX(${rotX}deg) rotateY(${rotY}deg) translateZ(8px)`;
+    // Spotlight border follows cursor
+    const pctX = ((e.clientX - rect.left) / rect.width)  * 100;
+    const pctY = ((e.clientY - rect.top)  / rect.height) * 100;
+    cardRef.current.style.setProperty('--spot-x', `${pctX}%`);
+    cardRef.current.style.setProperty('--spot-y', `${pctY}%`);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    if (!cardRef.current) return;
+    cardRef.current.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px)';
+  }, []);
 
   return (
-    <div className="group relative rounded-2xl border border-white/5 bg-slate-900/40 overflow-hidden shadow-2xl backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-white/10 hover:bg-slate-900/60 flex flex-col h-full">
-      {/* Decorative featured badge */}
-      {destination.featured && (
-        <div className="absolute top-3 right-3 z-10 flex items-center space-x-1 rounded-full bg-teal-500/95 px-2.5 py-1 text-xs font-bold text-slate-950 shadow-md">
-          <Sparkles className="h-3 w-3" />
-          <span>Featured</span>
-        </div>
-      )}
-
-      {/* Image / Fallback placeholder */}
-      <div className="relative h-48 w-full bg-gradient-to-br from-slate-900 to-indigo-950/40 flex items-center justify-center border-b border-white/5 overflow-hidden">
-        {imageUrl ? (
-          <img 
-            src={imageUrl} 
-            alt={destination.name} 
-            className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-[1.03] transition-all duration-500" 
-          />
-        ) : (
-          <Compass className="h-12 w-12 text-slate-700 transition-transform duration-500 group-hover:scale-110 group-hover:text-teal-500/50" />
+    <div
+      ref={wrapRef}
+      className="card-3d-wrapper h-full"
+      style={{ '--anim-delay': `${index * 80}ms` } as React.CSSProperties}
+    >
+      <div
+        ref={cardRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        className="group relative rounded-2xl overflow-hidden flex flex-col h-full
+                   border border-white/[0.07] bg-[#111113]
+                   shadow-[0_4px_24px_rgba(0,0,0,0.4)]
+                   will-change-transform transition-shadow duration-500
+                   hover:shadow-[0_20px_60px_rgba(0,0,0,0.6),0_0_0_1px_rgba(16,185,129,0.15)]"
+        style={{
+          transition: 'transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s ease',
+          // Spotlight border via CSS paint trick
+          background: 'radial-gradient(circle at var(--spot-x, 50%) var(--spot-y, 50%), rgba(16,185,129,0.04) 0%, transparent 60%), #111113',
+        }}
+      >
+        {/* Featured badge */}
+        {destination.featured && (
+          <div className="absolute top-3.5 left-3.5 z-20 flex items-center gap-1
+                          px-2.5 py-1 rounded-full
+                          bg-amber-400/90 backdrop-blur-sm
+                          text-[10px] font-bold text-zinc-900 tracking-wide uppercase
+                          shadow-lg">
+            <Star className="h-2.5 w-2.5 fill-current" />
+            Featured
+          </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-transparent opacity-60" />
-      </div>
 
-      {/* Details body */}
-      <div className="p-6 flex-grow flex flex-col justify-between">
-        <div>
-          {/* Location */}
-          <div className="flex items-center space-x-1 text-xs font-semibold text-teal-400 uppercase tracking-wider">
-            <MapPin className="h-3 w-3" />
-            <span>
-              {destination.state ? `${destination.state}, ` : ''}
-              {destination.country}
+        {/* ── Image ── */}
+        <div className="relative h-52 w-full overflow-hidden bg-zinc-900 flex-shrink-0">
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={destination.name}
+              className="w-full h-full object-cover
+                         group-hover:scale-[1.06]
+                         transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]
+                         opacity-80 group-hover:opacity-95"
+              loading="lazy"
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <Compass className="h-12 w-12 text-zinc-700" />
+            </div>
+          )}
+
+          {/* Gradient overlay — stronger at bottom */}
+          <div className="absolute inset-0 img-fade-bottom pointer-events-none" />
+
+          {/* Location overlay */}
+          <div className="absolute bottom-3 left-4 right-4 flex items-center gap-1.5">
+            <MapPin className="h-3 w-3 text-emerald-400 flex-shrink-0" />
+            <span className="text-xs font-semibold text-zinc-200 truncate tracking-wide">
+              {destination.state ? `${destination.state}, ` : ''}{destination.country}
             </span>
           </div>
-
-          {/* Name */}
-          <h3 className="mt-2 text-xl font-bold text-white group-hover:text-teal-300 transition-colors">
-            {destination.name}
-          </h3>
-
-          {/* Description snippet */}
-          <p className="mt-3 text-sm leading-relaxed text-slate-400 line-clamp-3 font-body-md">
-            {destination.description}
-          </p>
         </div>
 
-        {/* Dynamic badge collections */}
-        <div className="mt-6 space-y-4">
-          {/* Activities list */}
+        {/* ── Content body ── */}
+        <div className="flex flex-col flex-grow p-5 gap-4">
+
+          {/* Name + description */}
+          <div>
+            <h3
+              className="text-lg font-bold text-zinc-50 leading-tight
+                         group-hover:text-emerald-300 transition-colors duration-300"
+              style={{ fontFamily: 'var(--font-outfit, Outfit)', letterSpacing: '-0.02em' }}
+            >
+              {destination.name}
+            </h3>
+            <p className="mt-2 text-sm text-zinc-500 leading-relaxed line-clamp-2"
+               style={{ fontFamily: 'var(--font-dm-sans, DM Sans)' }}>
+              {destination.description}
+            </p>
+          </div>
+
+          {/* Activity tags */}
           <div className="flex flex-wrap gap-1.5">
             {destination.activities.slice(0, 3).map((act, idx) => (
               <span
                 key={idx}
-                className="rounded-md bg-white/5 px-2 py-0.5 text-xs font-medium text-slate-300 border border-white/5"
+                className="tag"
               >
                 {act}
               </span>
             ))}
             {destination.activities.length > 3 && (
-              <span className="text-xs font-semibold text-slate-500 pl-1">
-                +{destination.activities.length - 3} more
+              <span className="tag text-zinc-600">
+                +{destination.activities.length - 3}
               </span>
             )}
           </div>
 
-          {/* Budget Info & CTA */}
-          <div className="flex items-center justify-between border-t border-white/5 pt-4">
-            <div className="flex flex-col">
-              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Est. Budget</span>
-              <span className="text-sm font-semibold text-slate-200">
-                {destination.budgetRange ? destination.budgetRange.split(' per ')[0] : 'Varies'}
+          {/* Budget + CTA */}
+          <div className="mt-auto flex items-center justify-between pt-4 border-t border-white/[0.06]">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest font-mono">
+                Est. Budget
+              </span>
+              <span className="text-sm font-semibold text-zinc-200 font-mono">
+                {destination.budgetRange
+                  ? destination.budgetRange.split(' per ')[0]
+                  : '—'
+                }
               </span>
             </div>
-            
+
             <Link
               href={`/destinations/${destination._id}`}
-              className="rounded-lg bg-white/5 border border-white/10 px-3.5 py-1.5 text-xs font-semibold text-slate-200 hover:bg-teal-500 hover:text-slate-950 hover:border-teal-400 transition-all shadow-md"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl
+                         text-xs font-semibold text-emerald-400
+                         border border-emerald-500/25 bg-emerald-500/5
+                         hover:bg-emerald-500/15 hover:border-emerald-500/40
+                         hover:text-emerald-300 hover:shadow-[0_0_20px_rgba(16,185,129,0.15)]
+                         transition-all duration-300"
             >
-              View Details
+              <span>Explore</span>
+              <TrendingUp className="h-3 w-3" />
             </Link>
           </div>
         </div>
+
+        {/* Hover emerald bottom line (Antigravity edge accent) */}
+        <div className="absolute bottom-0 left-0 right-0 h-[1.5px]
+                        bg-gradient-to-r from-transparent via-emerald-500/60 to-transparent
+                        opacity-0 group-hover:opacity-100
+                        transition-opacity duration-500" />
       </div>
     </div>
   );

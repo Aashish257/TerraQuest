@@ -1,15 +1,33 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Outfit, DM_Sans } from 'next/font/google';
 import './globals.css';
 import Header from '@/components/layouts/Header';
 import Footer from '@/components/layouts/Footer';
 
-const inter = Inter({ subsets: ['latin'] });
+const outfit = Outfit({
+  subsets: ['latin'],
+  variable: '--font-outfit',
+  display: 'swap',
+  weight: ['300', '400', '500', '600', '700', '800', '900'],
+});
+
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  variable: '--font-dm-sans',
+  display: 'swap',
+  weight: ['300', '400', '500', '600'],
+});
 
 export const metadata: Metadata = {
-  title: 'TerraQuest — Discover India\'s Hidden Gems & AI Itineraries',
-  description: 'TerraQuest is an AI-powered travel planner that helps you discover offbeat destinations, build structured budgets, and plan trips across India.',
-  keywords: 'travel planner, AI itineraries, India travel, hidden places, travel budget tracker',
+  title: 'TerraQuest — AI-Powered Travel Planning for India',
+  description:
+    'TerraQuest uses cutting-edge AI to craft personalized itineraries, connect you with verified local guides, and help you explore India\'s most extraordinary destinations.',
+  keywords: 'travel planner, AI itineraries, India travel, local guides, hidden destinations, budget tracker',
+  openGraph: {
+    title: 'TerraQuest — AI-Powered Travel Planning',
+    description: 'Craft impeccable itineraries with AI. Connect with local experts. Discover hidden India.',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({
@@ -18,17 +36,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full bg-slate-950">
-      <body className={`${inter.className} flex flex-col min-h-screen text-slate-100 antialiased`}>
-        {/* Header Navigation */}
+    <html lang="en" className={`h-full ${outfit.variable} ${dmSans.variable}`}>
+      <body
+        style={{ fontFamily: 'var(--font-dm-sans, DM Sans), system-ui, sans-serif' }}
+        className="flex flex-col min-h-[100dvh] bg-[#09090b] text-zinc-100 antialiased"
+      >
         <Header />
-        
-        {/* Main Content Area */}
-        <main className="flex-grow flex flex-col bg-slate-950">
+        <main className="flex-grow flex flex-col">
           {children}
         </main>
-        
-        {/* Footer */}
         <Footer />
       </body>
     </html>

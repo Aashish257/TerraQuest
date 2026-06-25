@@ -62,6 +62,8 @@ export const getUserById = async (
   }
 };
 
+
+
 export const getAllUsers = async (
   req: AuthRequest,
   res: Response,

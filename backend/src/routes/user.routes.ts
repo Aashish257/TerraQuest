@@ -23,14 +23,14 @@ import { updateUserSchema } from '../validators/user.validator';
 
 const router = Router();
 
-// Protected profile routes
-router.get('/me', authenticate, getMe);
-router.put('/me', authenticate, validate(updateUserSchema), updateMe);
-
-// Admin-only user management routes
+// Admin routes (placed BEFORE /:id to avoid clash)
 router.get('/', authenticate, authorize('admin'), getAllUsers);
 router.patch('/:id/status', authenticate, authorize('admin'), updateUserStatus);
 router.patch('/:id/role', authenticate, authorize('admin'), updateUserRole);
+
+// Protected profile routes
+router.get('/me', authenticate, getMe);
+router.put('/me', authenticate, validate(updateUserSchema), updateMe);
 
 // Public profile retrieval
 router.get('/:id', getUserById);

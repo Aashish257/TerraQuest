@@ -1,6 +1,7 @@
 # Docs folders (excluded from repo)
 Doc/
 Doc1/
+Explanation/
 artifacts-symlink/
 *.zip
 
