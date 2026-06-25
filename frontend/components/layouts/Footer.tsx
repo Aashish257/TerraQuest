@@ -102,7 +102,7 @@ export default function Footer() {
             <p className="text-sm text-zinc-500 leading-relaxed max-w-xs"
                style={{ fontFamily: 'var(--font-dm-sans, DM Sans)' }}>
               AI-powered travel intelligence for modern explorers.
-              Discover India's most extraordinary destinations with verified local guides.
+              Discover India&apos;s most extraordinary destinations with verified local guides.
             </p>
 
             {/* Social links */}
