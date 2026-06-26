@@ -1,3 +1,4 @@
+// This file contains the main business logic and backend processes for rating service.
 import mongoose from 'mongoose';
 import { reviewRepository } from '../repositories/ReviewRepository';
 import { guideRepository } from '../repositories/GuideRepository';

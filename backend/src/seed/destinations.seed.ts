@@ -1,3 +1,4 @@
+// This file inserts initial sample data for destinations seed into the database.
 /**
  * destinations.seed.ts — Destination data seeder
  *

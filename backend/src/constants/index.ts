@@ -1,3 +1,4 @@
+// This file provides code functionality and logic for index.
 export const ROLES = {
   TRAVELER: 'traveler',
   GUIDE: 'guide',

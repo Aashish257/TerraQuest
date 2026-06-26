@@ -1,3 +1,4 @@
+// This file sets up the layout framework for all screens in the admin section.
 'use client';
 
 /**

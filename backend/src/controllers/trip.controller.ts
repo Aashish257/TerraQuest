@@ -1,3 +1,4 @@
+// This file handles the HTTP requests and responses for trip controller features.
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
 import * as tripService from '../services/trip.service';

@@ -1,3 +1,4 @@
+// This file handles the HTTP requests and responses for auth controller features.
 /**
  * auth.controller.ts — Authentication controller
  *

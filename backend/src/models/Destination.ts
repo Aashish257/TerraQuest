@@ -1,3 +1,4 @@
+// This file defines the database structure and schema for destination records.
 /**
  * Destination.ts — Destination Mongoose model
  *

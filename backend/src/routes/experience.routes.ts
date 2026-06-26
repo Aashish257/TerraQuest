@@ -1,3 +1,4 @@
+// This file defines the API routes and links endpoints to controllers for experience routes.
 import { Router } from 'express';
 import { authenticate } from '../middleware/auth.middleware';
 import { authorize } from '../middleware/role.middleware';

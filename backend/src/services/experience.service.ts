@@ -1,3 +1,4 @@
+// This file contains the main business logic and backend processes for experience service.
 import { experienceRepository } from '../repositories/ExperienceRepository';
 import { guideRepository } from '../repositories/GuideRepository';
 import { destinationRepository } from '../repositories/DestinationRepository';

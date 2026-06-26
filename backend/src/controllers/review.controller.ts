@@ -1,3 +1,4 @@
+// This file handles the HTTP requests and responses for review controller features.
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
 import * as reviewService from '../services/review.service';

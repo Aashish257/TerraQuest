@@ -1,3 +1,4 @@
+// This file contains the main business logic and backend processes for review service.
 import { reviewRepository } from '../repositories/ReviewRepository';
 import { destinationRepository } from '../repositories/DestinationRepository';
 import { guideRepository } from '../repositories/GuideRepository';

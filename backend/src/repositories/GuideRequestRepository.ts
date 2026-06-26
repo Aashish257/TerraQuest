@@ -1,3 +1,4 @@
+// This file handles direct database queries and data access operations for guide request repository.
 import { BaseRepository } from './BaseRepository';
 import GuideRequest, { IGuideRequest } from '../models/GuideRequest';
 

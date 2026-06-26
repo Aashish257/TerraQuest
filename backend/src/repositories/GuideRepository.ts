@@ -1,3 +1,4 @@
+// This file handles direct database queries and data access operations for guide repository.
 import { BaseRepository } from './BaseRepository';
 import GuideProfile, { IGuideProfile } from '../models/GuideProfile';
 import { FilterQuery } from 'mongoose';

@@ -1,3 +1,4 @@
+// This file contains the main business logic and backend processes for budget service.
 import mongoose from 'mongoose';
 import { budgetRepository } from '../repositories/BudgetRepository';
 import { tripRepository } from '../repositories/TripRepository';

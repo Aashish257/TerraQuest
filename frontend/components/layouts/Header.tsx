@@ -1,3 +1,4 @@
+// This is a reusable UI component that displays the header on the website.
 'use client';
 
 /**

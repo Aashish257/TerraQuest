@@ -1,3 +1,4 @@
+// This file renders the page screen for guide requests in the browser.
 'use client';
 
 /**

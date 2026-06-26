@@ -1,3 +1,4 @@
+// This file sets up configurations like the database connection or environment variables.
 /**
  * env.ts — Environment variable validation
  *

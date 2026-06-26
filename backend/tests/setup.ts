@@ -1,3 +1,4 @@
+// This file contains automated tests to verify the correctness of the application code.
 /**
  * tests/setup.ts — Per-test-file database connection hooks
  *

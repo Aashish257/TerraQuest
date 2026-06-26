@@ -1,3 +1,4 @@
+// This file defines the API routes and links endpoints to controllers for review routes.
 /**
  * review.routes.ts — Review routes
  *

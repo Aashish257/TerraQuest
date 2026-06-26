@@ -1,3 +1,4 @@
+// This file inserts initial sample data for fix images into the database.
 /**
  * fix-images.ts — One-shot image URL patch script
  *

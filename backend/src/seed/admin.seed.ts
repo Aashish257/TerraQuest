@@ -1,3 +1,4 @@
+// This file inserts initial sample data for admin seed into the database.
 /**
  * admin.seed.ts — Seeder for default Admin User
  *

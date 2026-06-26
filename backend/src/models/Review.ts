@@ -1,3 +1,4 @@
+// This file defines the database structure and schema for review records.
 /**
  * Review.ts — Review Mongoose model
  *

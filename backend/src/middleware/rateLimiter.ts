@@ -1,3 +1,4 @@
+// This middleware file checks and processes incoming requests before they reach the main logic.
 /**
  * rateLimiter.ts — Auth rate limiting middleware (v2 Backlog)
  *

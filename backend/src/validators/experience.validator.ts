@@ -1,3 +1,4 @@
+// This file checks and validates input data for experience validator to ensure correctness.
 import { z } from 'zod';
 
 export const createExperienceSchema = z.object({

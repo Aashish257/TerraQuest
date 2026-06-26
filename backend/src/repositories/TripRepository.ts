@@ -1,3 +1,4 @@
+// This file handles direct database queries and data access operations for trip repository.
 import { BaseRepository } from './BaseRepository';
 import Trip, { ITrip } from '../models/Trip';
 

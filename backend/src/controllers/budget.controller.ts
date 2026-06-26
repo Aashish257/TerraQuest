@@ -1,3 +1,4 @@
+// This file handles the HTTP requests and responses for budget controller features.
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
 import * as budgetService from '../services/budget.service';

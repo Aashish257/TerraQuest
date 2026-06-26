@@ -1,3 +1,4 @@
+// This file sets up configurations like the database connection or environment variables.
 /**
  * db.ts — MongoDB connection via Mongoose
  *

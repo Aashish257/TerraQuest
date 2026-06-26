@@ -1,3 +1,4 @@
+// This file defines the database structure and schema for a i plan records.
 /**
  * AIPlan.ts — AI-Generated Travel Plan Mongoose model
  *

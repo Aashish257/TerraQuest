@@ -1,3 +1,4 @@
+// This file contains the main business logic and backend processes for trip service.
 import { tripRepository } from '../repositories/TripRepository';
 import { tripMemberRepository } from '../repositories/TripMemberRepository';
 import { userRepository } from '../repositories/UserRepository';

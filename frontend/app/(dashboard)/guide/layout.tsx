@@ -1,3 +1,4 @@
+// This file sets up the layout framework for all screens in the guide section.
 'use client';
 
 /**

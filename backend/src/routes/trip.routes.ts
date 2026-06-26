@@ -1,3 +1,4 @@
+// This file defines the API routes and links endpoints to controllers for trip routes.
 /**
  * trip.routes.ts — Trips and nested budget entries routes
  *

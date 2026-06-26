@@ -1,3 +1,4 @@
+// This file defines the database structure and schema for trip member records.
 /**
  * TripMember.ts — Trip Member Mongoose model
  *

@@ -1,3 +1,4 @@
+// This file defines the database structure and schema for trip records.
 /**
  * Trip.ts — Trip Mongoose model
  *

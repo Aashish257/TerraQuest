@@ -1,3 +1,4 @@
+// This is a reusable UI component that displays the destination card on the website.
 'use client';
 
 /**

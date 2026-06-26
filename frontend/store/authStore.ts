@@ -1,3 +1,4 @@
+// This file manages the shared global state and frontend actions for auth store.
 /**
  * authStore.ts — Zustand global authentication store
  *

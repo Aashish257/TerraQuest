@@ -1,3 +1,4 @@
+// This file handles direct database queries and data access operations for budget repository.
 import { BaseRepository } from './BaseRepository';
 import BudgetEntry, { IBudgetEntry } from '../models/BudgetEntry';
 

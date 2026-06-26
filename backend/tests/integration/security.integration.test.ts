@@ -1,3 +1,4 @@
+// This file contains automated tests to verify the correctness of the application code.
 import '../setup';
 import request from 'supertest';
 import app from '../../src/app';

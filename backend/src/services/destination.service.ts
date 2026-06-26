@@ -1,3 +1,4 @@
+// This file contains the main business logic and backend processes for destination service.
 import { destinationRepository } from '../repositories/DestinationRepository';
 import { AppError } from '../middleware/errorHandler';
 

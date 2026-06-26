@@ -1,3 +1,4 @@
+// This file handles the HTTP requests and responses for destination controller features.
 import { Request, Response, NextFunction } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
 import * as destinationService from '../services/destination.service';

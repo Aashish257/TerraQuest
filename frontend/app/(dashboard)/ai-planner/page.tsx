@@ -1,3 +1,4 @@
+// This file renders the page screen for ai planner in the browser.
 'use client';
 
 /**
@@ -24,11 +25,17 @@ import {
   AlertCircle,
   Clock,
   ChevronRight,
-  TrendingUp,
   Bookmark,
-  Share2,
   ArrowRight,
-  BookOpen
+  BookOpen,
+  Mountain,
+  Utensils,
+  Landmark,
+  Trees,
+  Music,
+  Flame,
+  MapPin,
+  Zap,
 } from 'lucide-react';
 
 interface Destination {
@@ -53,19 +60,19 @@ interface AIPlan {
 }
 
 const INTERESTS_OPTIONS = [
-  { value: 'Adventure', label: 'Adventure 🏄' },
-  { value: 'Food', label: 'Food 🍔' },
-  { value: 'Culture', label: 'Culture 🏛️' },
-  { value: 'Nature', label: 'Nature 🌲' },
-  { value: 'Nightlife', label: 'Nightlife 🍻' },
-  { value: 'Spiritual', label: 'Spiritual 🧘' },
+  { value: 'Adventure', label: 'Adventure', icon: Mountain },
+  { value: 'Food', label: 'Food', icon: Utensils },
+  { value: 'Culture', label: 'Culture', icon: Landmark },
+  { value: 'Nature', label: 'Nature', icon: Trees },
+  { value: 'Nightlife', label: 'Nightlife', icon: Music },
+  { value: 'Spiritual', label: 'Spiritual', icon: Flame },
 ];
 
 function parseBoldText(text: string) {
   const parts = text.split('**');
   return parts.map((part, i) =>
     i % 2 === 1 ? (
-      <strong key={i} className="text-white font-extrabold bg-teal-500/10 px-1 rounded">
+      <strong key={i} className="text-white font-extrabold" style={{ background: 'rgba(16,185,129,0.1)', padding: '0 3px', borderRadius: '3px' }}>
         {part}
       </strong>
     ) : (
@@ -77,54 +84,45 @@ function parseBoldText(text: string) {
 function MarkdownRenderer({ content }: { content: string }) {
   const lines = content.split('\n');
   return (
-    <div className="space-y-4 text-slate-300 text-sm leading-relaxed font-sans">
+    <div className="space-y-4 text-sm leading-relaxed" style={{ color: 'var(--color-text-2)', fontFamily: 'var(--font-body)' }}>
       {lines.map((line, idx) => {
         const trimmed = line.trim();
 
-        // Main titles #
         if (trimmed.startsWith('# ')) {
           return (
-            <h1 key={idx} className="text-2xl font-extrabold text-white mt-8 mb-4 flex items-center space-x-2">
-              <Sparkles className="h-5 w-5 text-teal-400" />
+            <h1 key={idx} className="text-2xl font-bold mt-8 mb-4 flex items-center gap-2" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-1)' }}>
+              <Sparkles className="h-5 w-5 flex-shrink-0" style={{ color: 'var(--color-accent)' }} />
               <span>{trimmed.replace('# ', '')}</span>
             </h1>
           );
         }
-        // Section titles ##
         if (trimmed.startsWith('## ')) {
           return (
-            <h2 key={idx} className="text-lg font-bold text-teal-400 mt-6 mb-3 border-b border-white/5 pb-1 uppercase tracking-wider">
+            <h2 key={idx} className="text-base font-bold mt-6 mb-3 pb-1 uppercase tracking-wider" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-accent)', borderBottom: '1px solid var(--color-border)' }}>
               {trimmed.replace('## ', '')}
             </h2>
           );
         }
-        // Day/Subsection titles ###
         if (trimmed.startsWith('### ')) {
           return (
-            <h3 key={idx} className="text-sm font-bold text-indigo-400 mt-5 mb-2.5 flex items-center space-x-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
+            <h3 key={idx} className="text-sm font-bold mt-5 mb-2 flex items-center gap-2" style={{ fontFamily: 'var(--font-display)', color: '#818cf8' }}>
+              <span className="h-1.5 w-1.5 rounded-full flex-shrink-0" style={{ background: '#818cf8' }} />
               <span>{trimmed.replace('### ', '')}</span>
             </h3>
           );
         }
-        // List items - or *
         if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
           const text = trimmed.substring(2);
           return (
-            <div key={idx} className="flex items-start space-x-2.5 pl-4 py-0.5">
-              <span className="mt-2 h-1.5 w-1.5 rounded-full bg-teal-500/60 flex-shrink-0" />
-              <p className="text-slate-300">{parseBoldText(text)}</p>
+            <div key={idx} className="flex items-start gap-3 pl-4 py-0.5">
+              <span className="mt-2 h-1.5 w-1.5 rounded-full flex-shrink-0" style={{ background: 'rgba(16,185,129,0.6)' }} />
+              <p style={{ color: 'var(--color-text-2)' }}>{parseBoldText(text)}</p>
             </div>
           );
         }
-        // Blank line
         if (!trimmed) return null;
-        
-        // Normal paragraph
         return (
-          <p key={idx} className="pl-1">
-            {parseBoldText(trimmed)}
-          </p>
+          <p key={idx} className="pl-1">{parseBoldText(trimmed)}</p>
         );
       })}
     </div>
@@ -157,7 +155,6 @@ function AIPlannerContent() {
   const [isSlowWarning, setIsSlowWarning] = useState(false);
   const slowTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-
   // Get parameters from URL
   const preselectedDuration = searchParams.get('duration');
   const preselectedBudget = searchParams.get('budget');
@@ -172,11 +169,9 @@ function AIPlannerContent() {
   // Load destinations & history plans
   const fetchInitialData = useCallback(async () => {
     try {
-      // 1. Fetch Destinations
       const destRes = await api.get('/destinations?limit=100');
       if (destRes.data.success) {
         setDestinations(destRes.data.destinations);
-        // If there's a preselected destination query param, set it
         if (preselectedDestId) {
           setDestinationId(preselectedDestId);
         } else if (destRes.data.destinations.length > 0) {
@@ -190,7 +185,6 @@ function AIPlannerContent() {
     }
 
     try {
-      // 2. Fetch Plans history
       const plansRes = await api.get('/ai/plans');
       if (plansRes.data.success) {
         setPlans(plansRes.data.plans);
@@ -241,10 +235,8 @@ function AIPlannerContent() {
 
     setIsGenerating(true);
     setIsSlowWarning(false);
-    // Show slow-connection warning after 12 seconds
     slowTimerRef.current = setTimeout(() => setIsSlowWarning(true), 12000);
     try {
-
       const res = await api.post('/ai/generate', {
         destinationId,
         budget: numBudget,
@@ -254,7 +246,6 @@ function AIPlannerContent() {
 
       if (res.data.success) {
         const newPlan = res.data.data;
-        // Prepend to plans history
         setPlans((prev) => [newPlan, ...prev]);
         setSelectedPlan(newPlan);
       }
@@ -270,7 +261,6 @@ function AIPlannerContent() {
       setIsSlowWarning(false);
       if (slowTimerRef.current) clearTimeout(slowTimerRef.current);
     }
-
   };
 
   // Convert AI plan to editable Trip Form prefills
@@ -278,8 +268,8 @@ function AIPlannerContent() {
     if (!selectedPlan) return;
     const isDestObj = typeof selectedPlan.destinationId === 'object' && selectedPlan.destinationId !== null;
     const destId = isDestObj ? (selectedPlan.destinationId as any)._id : selectedPlan.destinationId;
-    const destName = isDestObj 
-      ? (selectedPlan.destinationId as any).name 
+    const destName = isDestObj
+      ? (selectedPlan.destinationId as any).name
       : destinations.find((d) => d._id === (selectedPlan.destinationId as any))?.name || 'India';
 
     router.push(
@@ -289,59 +279,84 @@ function AIPlannerContent() {
 
   if (authLoading) {
     return (
-      <div className="flex-grow flex flex-col justify-center items-center py-20 bg-slate-950">
-        <Loader2 className="h-10 w-10 text-teal-500 animate-spin" />
-        <p className="mt-4 text-sm text-slate-500">Checking auth credentials...</p>
+      <div className="flex-grow flex flex-col justify-center items-center py-20">
+        <div className="glass rounded-2xl px-8 py-6 flex flex-col items-center gap-4">
+          <div className="relative">
+            <div className="absolute -inset-3 rounded-full animate-pulse" style={{ background: 'rgba(16,185,129,0.15)' }} />
+            <Loader2 className="relative h-10 w-10 animate-spin" style={{ color: 'var(--color-accent)' }} />
+          </div>
+          <p className="text-sm font-semibold" style={{ color: 'var(--color-text-3)' }}>Checking auth credentials...</p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 w-full flex-grow flex flex-col justify-start">
-      
+
       {/* Header Panel */}
-      <div>
-        <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl flex items-center space-x-2">
-          <Sparkles className="h-8 w-8 text-teal-400 animate-pulse" />
-          <span>AI Itinerary Planner</span>
-        </h1>
-        <p className="mt-2 text-sm text-slate-400">
-          Generate custom day-by-day itineraries tailored to your budget and travel DNA.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 rounded-xl" style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
+              <Sparkles className="h-5 w-5" style={{ color: 'var(--color-accent)' }} />
+            </div>
+            <h1 className="text-3xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-1)' }}>
+              AI Itinerary Planner
+            </h1>
+          </div>
+          <p className="text-sm" style={{ color: 'var(--color-text-3)', fontFamily: 'var(--font-body)' }}>
+            Generate custom day-by-day itineraries tailored to your budget and travel DNA.
+          </p>
+        </div>
+        <Link
+          href="/trips"
+          className="btn btn-ghost text-sm hidden sm:inline-flex"
+        >
+          <MapPin className="h-4 w-4" />
+          My Trips
+        </Link>
       </div>
 
       {/* Main Grid Layout */}
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8 items-start flex-grow">
-        
-        {/* Left Column: Form Wizard + History list */}
-        <div className="space-y-8 lg:col-span-1">
-          {/* Wizard Card */}
-          <div className="rounded-2xl border border-white/5 bg-slate-900/40 p-6 shadow-2xl backdrop-blur-md">
-            <h3 className="text-base font-bold text-white mb-4 flex items-center space-x-2">
-              <Compass className="h-4.5 w-4.5 text-teal-400" />
-              <span>Itinerary Generator Wizard</span>
-            </h3>
+      <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6 items-start flex-grow">
 
+        {/* Left Column: Form Wizard + History list */}
+        <div className="space-y-6 lg:col-span-1">
+
+          {/* Wizard Card */}
+          <div className="glass-strong rounded-2xl p-6">
+            <div className="flex items-center gap-2 mb-5">
+              <Compass className="h-4 w-4" style={{ color: 'var(--color-accent)' }} />
+              <h3 className="text-sm font-bold" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-1)' }}>
+                Itinerary Generator
+              </h3>
+            </div>
+
+            {/* Error message */}
             {errorMsg && (
-              <div className="mb-4 flex items-center space-x-2 rounded-lg bg-rose-500/10 border border-rose-500/20 p-3 text-xs text-rose-400">
-                <AlertCircle className="h-4.5 w-4.5 flex-shrink-0" />
+              <div className="mb-4 flex items-start gap-2 rounded-xl p-3 text-xs"
+                style={{ background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)', color: '#fb7185' }}>
+                <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
                 <span>{errorMsg}</span>
               </div>
             )}
 
-            <form onSubmit={handleGenerate} className="space-y-4">
+            <form onSubmit={handleGenerate} className="space-y-5">
+
               {/* Destination Dropdown */}
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                  Select Destination
+                <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--color-text-3)' }}>
+                  Destination
                 </label>
                 {destLoading ? (
-                  <div className="h-9 w-full bg-slate-950/60 animate-pulse rounded border border-white/5" />
+                  <div className="skeleton h-10 w-full rounded-xl" />
                 ) : (
                   <select
                     value={destinationId}
                     onChange={(e) => setDestinationId(e.target.value)}
-                    className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-200 outline-none focus:border-teal-500 transition-colors"
+                    className="input-field text-sm"
+                    style={{ fontFamily: 'var(--font-body)' }}
                     required
                   >
                     <option value="">-- Choose Target Spot --</option>
@@ -356,9 +371,11 @@ function AIPlannerContent() {
 
               {/* Duration Slider */}
               <div>
-                <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                  <span>Itinerary Duration</span>
-                  <span className="text-teal-400 font-extrabold">{duration} Days</span>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--color-text-3)' }}>
+                    Duration
+                  </label>
+                  <span className="font-mono text-sm font-bold" style={{ color: 'var(--color-accent)' }}>{duration} Days</span>
                 </div>
                 <input
                   type="range"
@@ -366,76 +383,82 @@ function AIPlannerContent() {
                   max="15"
                   value={duration}
                   onChange={(e) => setDuration(Number(e.target.value))}
-                  className="w-full accent-teal-500 cursor-pointer"
+                  className="w-full cursor-pointer"
+                  style={{ accentColor: 'var(--color-accent)' }}
                 />
-                <div className="flex items-center justify-between text-[10px] text-slate-500 font-semibold px-0.5 mt-0.5">
-                  <span>1 Day</span>
-                  <span>7 Days</span>
-                  <span>15 Days</span>
+                <div className="flex items-center justify-between mt-1 px-0.5">
+                  <span className="font-mono text-xs" style={{ color: 'var(--color-text-3)' }}>1</span>
+                  <span className="font-mono text-xs" style={{ color: 'var(--color-text-3)' }}>7</span>
+                  <span className="font-mono text-xs" style={{ color: 'var(--color-text-3)' }}>15</span>
                 </div>
               </div>
 
-              {/* Planned Budget */}
+              {/* Budget */}
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                  Planned Budget (INR)
+                <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--color-text-3)' }}>
+                  Budget (INR)
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-2 text-xs text-slate-500">₹</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-mono" style={{ color: 'var(--color-text-3)' }}>₹</span>
                   <input
                     type="number"
                     min="1000"
                     step="500"
                     value={budget}
                     onChange={(e) => setBudget(e.target.value)}
-                    className="w-full rounded-lg border border-slate-700 bg-slate-950 pl-6 pr-3 py-2 text-xs text-white outline-none focus:border-teal-500 transition-colors"
+                    className="input-field pl-7 font-mono text-sm"
                     placeholder="15000"
                     required
                   />
                 </div>
               </div>
 
-              {/* Traveler Interests Tags list */}
+              {/* Travel Interests */}
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                  Select Travel Interests
+                <label className="block text-xs font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--color-text-3)' }}>
+                  Travel Interests
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {INTERESTS_OPTIONS.map((opt) => {
                     const isSelected = selectedInterests.includes(opt.value);
+                    const Icon = opt.icon;
                     return (
                       <button
                         type="button"
                         key={opt.value}
                         onClick={() => toggleInterest(opt.value)}
-                        className={`text-left text-xs font-semibold rounded-lg border p-2.5 transition-all flex items-center justify-between ${
-                          isSelected
-                            ? 'border-teal-500 bg-teal-500/10 text-teal-400 shadow-md'
-                            : 'border-white/5 bg-slate-950/60 text-slate-400 hover:border-white/10 hover:text-slate-200'
-                        }`}
+                        className="flex items-center gap-2 rounded-xl p-2.5 text-xs font-semibold text-left transition-all duration-200"
+                        style={{
+                          border: isSelected ? '1px solid rgba(16,185,129,0.4)' : '1px solid var(--color-border)',
+                          background: isSelected ? 'rgba(16,185,129,0.08)' : 'rgba(255,255,255,0.02)',
+                          color: isSelected ? 'var(--color-accent)' : 'var(--color-text-3)',
+                          transform: isSelected ? 'scale(1.02)' : 'scale(1)',
+                        }}
                       >
-                        <span>{opt.label.split(' ')[0]}</span>
-                        <span>{opt.label.split(' ')[1]}</span>
+                        <Icon className="h-3.5 w-3.5 flex-shrink-0" />
+                        <span>{opt.label}</span>
                       </button>
                     );
                   })}
                 </div>
               </div>
 
+              {/* Generate Button */}
               <button
                 type="submit"
                 disabled={isGenerating}
-                className="mt-6 w-full rounded-lg bg-gradient-to-r from-teal-500 to-indigo-600 py-3 text-xs font-bold text-white shadow-lg shadow-teal-500/10 hover:from-teal-400 hover:to-indigo-500 disabled:opacity-50 transition-all hover:scale-[1.01] flex items-center justify-center space-x-2"
+                className="btn btn-primary w-full mt-2"
+                style={{ opacity: isGenerating ? 0.7 : 1 }}
               >
                 {isGenerating ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin text-white" />
-                    <span>Analyzing DNA & Generating...</span>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Generating Plan...</span>
                   </>
                 ) : (
                   <>
-                    <Sparkles className="h-4 w-4 text-teal-300" />
-                    <span>Create AI Plan</span>
+                    <Zap className="h-4 w-4" />
+                    <span>Generate AI Plan</span>
                   </>
                 )}
               </button>
@@ -443,47 +466,57 @@ function AIPlannerContent() {
           </div>
 
           {/* History Panel */}
-          <div className="rounded-2xl border border-white/5 bg-slate-900/40 p-6 shadow-2xl backdrop-blur-md flex flex-col justify-start">
-            <h3 className="text-base font-bold text-white mb-4 flex items-center space-x-2">
-              <BookOpen className="h-4.5 w-4.5 text-indigo-400" />
-              <span>Itinerary History</span>
-            </h3>
+          <div className="glass rounded-2xl p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <BookOpen className="h-4 w-4" style={{ color: '#818cf8' }} />
+              <h3 className="text-sm font-bold" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-1)' }}>
+                Plan History
+              </h3>
+              {plans.length > 0 && (
+                <span className="ml-auto font-mono text-xs px-2 py-0.5 rounded-md"
+                  style={{ background: 'rgba(129,140,248,0.1)', color: '#818cf8', border: '1px solid rgba(129,140,248,0.2)' }}>
+                  {plans.length}
+                </span>
+              )}
+            </div>
 
             {plansLoading ? (
               <div className="space-y-3">
                 {[1, 2, 3].map((n) => (
-                  <div key={n} className="h-14 bg-slate-950/60 animate-pulse rounded border border-white/5" />
+                  <div key={n} className="skeleton h-14 rounded-xl" />
                 ))}
               </div>
             ) : plans.length === 0 ? (
-              <p className="text-xs text-slate-500 text-center py-6 font-semibold">No previously saved plans.</p>
+              <div className="py-8 text-center">
+                <Bookmark className="h-8 w-8 mx-auto mb-2" style={{ color: 'var(--color-text-3)' }} />
+                <p className="text-xs font-semibold" style={{ color: 'var(--color-text-3)' }}>No saved plans yet</p>
+              </div>
             ) : (
-              <div className="space-y-3.5 max-h-80 overflow-y-auto pr-1">
+              <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
                 {plans.map((item) => {
                   const isSelected = selectedPlan?._id === item._id;
                   return (
                     <button
                       key={item._id}
                       onClick={() => setSelectedPlan(item)}
-                      className={`w-full text-left p-3.5 rounded-xl border transition-all flex items-center justify-between ${
-                        isSelected
-                          ? 'border-teal-500/40 bg-teal-500/5 text-white'
-                          : 'border-white/5 bg-slate-950/40 text-slate-400 hover:bg-slate-900/60 hover:text-slate-200'
-                      }`}
+                      className="w-full text-left p-3 rounded-xl transition-all flex items-center justify-between gap-2"
+                      style={{
+                        border: isSelected ? '1px solid rgba(16,185,129,0.35)' : '1px solid var(--color-border)',
+                        background: isSelected ? 'rgba(16,185,129,0.06)' : 'transparent',
+                      }}
                     >
-                      <div className="max-w-[85%]">
-                        <h4 className="text-xs font-bold truncate">
-                          {item.duration} Days in {
-                            typeof item.destinationId === 'object' && item.destinationId
-                              ? (item.destinationId as any).name
-                              : destinations.find((d) => d._id === (item.destinationId as any))?.name || 'India'
-                          }
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-xs font-bold truncate" style={{ color: isSelected ? 'var(--color-text-1)' : 'var(--color-text-2)' }}>
+                          {item.duration} Days in{' '}
+                          {typeof item.destinationId === 'object' && item.destinationId
+                            ? (item.destinationId as any).name
+                            : destinations.find((d) => d._id === (item.destinationId as any))?.name || 'India'}
                         </h4>
-                        <p className="text-[10px] text-slate-500 mt-1 font-semibold">
-                          Budget: ₹{item.budget.toLocaleString('en-IN')} | {item.interests.slice(0, 2).join(', ')}
+                        <p className="text-xs mt-0.5 font-mono" style={{ color: 'var(--color-text-3)' }}>
+                          ₹{item.budget.toLocaleString('en-IN')} · {item.interests.slice(0, 2).join(', ')}
                         </p>
                       </div>
-                      <ChevronRight className="h-4 w-4 text-slate-600" />
+                      <ChevronRight className="h-3.5 w-3.5 flex-shrink-0" style={{ color: isSelected ? 'var(--color-accent)' : 'var(--color-text-3)' }} />
                     </button>
                   );
                 })}
@@ -494,102 +527,136 @@ function AIPlannerContent() {
 
         {/* Right Column: AI Plan display panel */}
         <div className="lg:col-span-2 h-full flex flex-col">
-          <div className="rounded-2xl border border-white/5 bg-slate-900/40 p-6 sm:p-8 shadow-2xl backdrop-blur-md flex-grow flex flex-col justify-start min-h-[500px]">
+          <div className="glass-strong rounded-2xl p-6 sm:p-8 flex-grow flex flex-col min-h-[520px]">
+
+            {/* Terminal-style top bar */}
+            <div className="flex items-center gap-2 mb-5 pb-4" style={{ borderBottom: '1px solid var(--color-border)' }}>
+              <div className="flex gap-1.5">
+                <span className="h-3 w-3 rounded-full" style={{ background: '#f87171' }} />
+                <span className="h-3 w-3 rounded-full" style={{ background: '#fbbf24' }} />
+                <span className="h-3 w-3 rounded-full" style={{ background: 'var(--color-accent)' }} />
+              </div>
+              <span className="ml-2 text-xs font-mono" style={{ color: 'var(--color-text-3)' }}>terraquest-ai-planner</span>
+              {selectedPlan && (
+                <span className="ml-auto flex items-center gap-1.5 text-xs font-mono px-2 py-0.5 rounded-md"
+                  style={{ background: 'rgba(16,185,129,0.08)', color: 'var(--color-accent)', border: '1px solid rgba(16,185,129,0.2)' }}>
+                  <span className="dot-pulse" />
+                  live
+                </span>
+              )}
+            </div>
+
             {isGenerating ? (
-              /* Loading Screen */
-              <div className="flex-grow flex flex-col justify-center items-center py-20 text-center">
+              /* Generating State */
+              <div className="flex-grow flex flex-col justify-center items-center py-16 text-center">
                 <div className="relative mb-6">
-                  <div className="h-16 w-16 rounded-full border-4 border-teal-500/30 border-t-teal-400 animate-spin mx-auto" />
-                  <Sparkles className="absolute inset-0 m-auto h-6 w-6 text-teal-400" />
+                  <div className="h-20 w-20 rounded-full mx-auto animate-spin"
+                    style={{ border: '3px solid rgba(16,185,129,0.2)', borderTopColor: 'var(--color-accent)' }} />
+                  <Sparkles className="absolute inset-0 m-auto h-7 w-7" style={{ color: 'var(--color-accent)' }} />
                 </div>
-                <h4 className="text-base font-bold text-white">Crafting Your Itinerary</h4>
-                <p className="mt-2 text-xs text-slate-400 max-w-xs leading-relaxed">
-                  Our AI is mapping out stays, activities &amp; budget splits tailored for your trip.
+                <h4 className="text-lg font-bold" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-1)' }}>
+                  Crafting Your Itinerary
+                </h4>
+                <p className="mt-2 text-sm max-w-xs leading-relaxed" style={{ color: 'var(--color-text-3)' }}>
+                  Mapping stays, activities and budget splits tailored for your trip.
                 </p>
+
                 {/* Step indicators */}
-                <div className="mt-6 flex flex-col gap-2 text-left w-full max-w-xs">
-                  {['Analyzing destination data', 'Building day-by-day schedule', 'Optimizing for your budget'].map((step, i) => (
-                    <div key={i} className="flex items-center gap-2 text-xs">
-                      <div className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${i === 0 ? 'bg-teal-400 animate-pulse' : 'bg-slate-700'}`} />
-                      <span className={i === 0 ? 'text-slate-300' : 'text-slate-600'}>{step}</span>
+                <div className="mt-8 flex flex-col gap-3 text-left w-full max-w-xs">
+                  {[
+                    'Analyzing destination data',
+                    'Building day-by-day schedule',
+                    'Optimizing for your budget',
+                  ].map((step, i) => (
+                    <div key={i} className="flex items-center gap-3 text-xs">
+                      <div className="h-2 w-2 rounded-full flex-shrink-0"
+                        style={{ background: i === 0 ? 'var(--color-accent)' : 'rgba(255,255,255,0.08)', animation: i === 0 ? 'dot-pulse 2s ease-in-out infinite' : 'none' }} />
+                      <span style={{ color: i === 0 ? 'var(--color-text-2)' : 'var(--color-text-3)' }}>{step}</span>
                     </div>
                   ))}
                 </div>
+
                 {isSlowWarning && (
-                  <div className="mt-6 flex items-center gap-2 rounded-lg bg-amber-500/10 border border-amber-500/20 px-4 py-2.5 text-xs text-amber-400 max-w-xs">
+                  <div className="mt-6 flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs max-w-xs"
+                    style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', color: '#fbbf24' }}>
                     <Clock className="h-4 w-4 flex-shrink-0" />
-                    <span>AI is taking longer than usual. Please wait — still working…</span>
+                    <span>AI is taking longer than usual. Still working...</span>
                   </div>
                 )}
               </div>
 
             ) : selectedPlan ? (
-              /* Plan Active Display */
-              <div className="flex flex-col h-full justify-between">
+              /* Plan Display */
+              <div className="flex flex-col h-full">
                 <div>
-                  {/* Top quick metadata banner */}
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-white/5 pb-4 mb-6">
+                  {/* Plan metadata header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                     <div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Day-by-Day Schedule</span>
-                      <h2 className="text-xl font-bold text-white mt-1">
-                        Explore Plan for {
-                          typeof selectedPlan.destinationId === 'object' && selectedPlan.destinationId
-                            ? (selectedPlan.destinationId as any).name
-                            : destinations.find((d) => d._id === (selectedPlan.destinationId as any))?.name || 'India'
-                        }
+                      <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--color-text-3)', fontFamily: 'var(--font-mono)' }}>
+                        Day-by-Day Schedule
+                      </span>
+                      <h2 className="text-xl font-bold mt-1" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-1)' }}>
+                        Explore Plan for{' '}
+                        {typeof selectedPlan.destinationId === 'object' && selectedPlan.destinationId
+                          ? (selectedPlan.destinationId as any).name
+                          : destinations.find((d) => d._id === (selectedPlan.destinationId as any))?.name || 'India'}
                       </h2>
                     </div>
-
-                    <div className="mt-4 sm:mt-0 flex space-x-2">
-                      <button
-                        onClick={handleCreateTripPrefilled}
-                        className="rounded-lg bg-teal-500 px-4 py-2 text-xs font-bold text-slate-950 hover:bg-teal-400 transition-colors flex items-center space-x-1.5 shadow-md shadow-teal-500/10"
-                      >
-                        <span>Convert to Trip</span>
-                        <ArrowRight className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
+                    <button
+                      onClick={handleCreateTripPrefilled}
+                      className="btn btn-primary text-sm shrink-0"
+                    >
+                      <span>Convert to Trip</span>
+                      <ArrowRight className="h-4 w-4" />
+                    </button>
                   </div>
 
-                  {/* Core MD renderer content */}
-                  <div className="overflow-y-auto max-h-[550px] pr-2">
+                  {/* Markdown content */}
+                  <div className="overflow-y-auto pr-2" style={{ maxHeight: '440px' }}>
                     <MarkdownRenderer content={selectedPlan.generatedPlan} />
                   </div>
                 </div>
 
-                {/* Footer metrics info */}
-                <div className="mt-8 border-t border-white/5 pt-4 flex flex-wrap gap-4 text-xs font-semibold text-slate-400">
-                  <div className="flex items-center space-x-1">
-                    <Clock className="h-4 w-4 text-indigo-400" />
-                    <span>Duration: {selectedPlan.duration} Days</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <DollarSign className="h-4 w-4 text-teal-400" />
-                    <span>Budget: ₹{selectedPlan.budget.toLocaleString('en-IN')}</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Bookmark className="h-4 w-4 text-amber-400" />
-                    <span>Interests: {selectedPlan.interests.join(', ')}</span>
+                {/* Footer metrics */}
+                <div className="mt-auto pt-4" style={{ borderTop: '1px solid var(--color-border)' }}>
+                  <div className="flex flex-wrap gap-4">
+                    {[
+                      { icon: Clock, label: `${selectedPlan.duration} Days`, color: '#818cf8' },
+                      { icon: DollarSign, label: `₹${selectedPlan.budget.toLocaleString('en-IN')}`, color: 'var(--color-accent)' },
+                      { icon: Bookmark, label: selectedPlan.interests.join(', '), color: '#fbbf24' },
+                    ].map(({ icon: Icon, label, color }, i) => (
+                      <div key={i} className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: 'var(--color-text-3)', fontFamily: 'var(--font-mono)' }}>
+                        <Icon className="h-4 w-4 flex-shrink-0" style={{ color }} />
+                        <span>{label}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
+
             ) : (
-              /* Placeholder screen */
-              <div className="flex-grow flex flex-col justify-center items-center py-20 text-center">
-                <div className="rounded-2xl bg-teal-500/5 p-4 border border-teal-500/10 text-teal-400 mb-4 animate-bounce">
-                  <Sparkles className="h-10 w-10" />
+              /* Empty placeholder */
+              <div className="flex-grow flex flex-col justify-center items-center py-16 text-center">
+                <div className="p-5 rounded-2xl mb-5 animate-float"
+                  style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.12)' }}>
+                  <Sparkles className="h-12 w-12" style={{ color: 'var(--color-accent)' }} />
                 </div>
-                <h4 className="text-lg font-bold text-white">Your AI travel plan awaits</h4>
-                <p className="mt-2 text-sm text-slate-400 max-w-sm leading-relaxed">
-                  Configure the destination, budget, duration, and interests on the left to generate a personalized day-by-day travel plan instantly.
+                <h4 className="text-xl font-bold" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-1)' }}>
+                  Your AI travel plan awaits
+                </h4>
+                <p className="mt-3 text-sm max-w-sm leading-relaxed" style={{ color: 'var(--color-text-3)' }}>
+                  Configure destination, budget, duration and interests on the left to generate a personalized day-by-day itinerary.
                 </p>
+                <div className="mt-6 flex items-center gap-2 text-xs font-semibold" style={{ color: 'var(--color-text-3)' }}>
+                  <div className="dot-pulse" />
+                  <span>Ready to generate</span>
+                </div>
               </div>
             )}
           </div>
         </div>
 
       </div>
-
     </div>
   );
 }
@@ -597,9 +664,11 @@ function AIPlannerContent() {
 export default function AIPlannerPage() {
   return (
     <Suspense fallback={
-      <div className="flex-grow flex flex-col justify-center items-center py-20 bg-slate-950">
-        <Loader2 className="h-10 w-10 text-teal-500 animate-spin" />
-        <p className="mt-4 text-sm text-slate-500">Loading planner layout...</p>
+      <div className="flex-grow flex flex-col justify-center items-center py-20">
+        <div className="glass rounded-2xl px-8 py-6 flex flex-col items-center gap-4">
+          <Loader2 className="h-10 w-10 animate-spin" style={{ color: 'var(--color-accent)' }} />
+          <p className="text-sm font-semibold" style={{ color: 'var(--color-text-3)' }}>Loading planner layout...</p>
+        </div>
       </div>
     }>
       <AIPlannerContent />

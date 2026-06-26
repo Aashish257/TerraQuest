@@ -1,3 +1,4 @@
+// This file checks and validates input data for trip validator to ensure correctness.
 /**
  * trip.validator.ts — Trip and budget entry request validators
  *

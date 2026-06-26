@@ -1,3 +1,4 @@
+// This script checks the status of guide request entries in the system.
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import User from './models/User';

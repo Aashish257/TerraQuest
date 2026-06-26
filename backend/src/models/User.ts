@@ -1,3 +1,4 @@
+// This file defines the database structure and schema for user records.
 /**
  * User.ts — User Mongoose model
  *

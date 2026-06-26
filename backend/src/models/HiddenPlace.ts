@@ -1,3 +1,4 @@
+// This file defines the database structure and schema for hidden place records.
 /**
  * HiddenPlace.ts — Hidden Place Mongoose model
  *

@@ -1,3 +1,4 @@
+// This is a reusable UI component that displays the footer on the website.
 'use client';
 
 /**

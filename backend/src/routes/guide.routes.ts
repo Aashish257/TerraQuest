@@ -1,3 +1,4 @@
+// This file defines the API routes and links endpoints to controllers for guide routes.
 /**
  * guide.routes.ts — Guide Profile routes
  *

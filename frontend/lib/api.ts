@@ -1,3 +1,4 @@
+// This file configures global utility setup or API client connections for api.
 /**
  * api.ts — Axios client instance
  *

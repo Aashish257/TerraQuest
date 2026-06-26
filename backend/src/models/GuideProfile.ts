@@ -1,3 +1,4 @@
+// This file defines the database structure and schema for guide profile records.
 /**
  * GuideProfile.ts — Guide Profile Mongoose model
  *

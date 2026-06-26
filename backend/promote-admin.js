@@ -1,3 +1,4 @@
+// This script promotes a registered user to the administrator role in the database.
 const mongoose = require('mongoose');
 
 mongoose.connect('mongodb://localhost:27017/terraquest').then(async () => {

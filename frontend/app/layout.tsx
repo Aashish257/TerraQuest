@@ -1,3 +1,4 @@
+// This file defines the root HTML layout, font setup, and provider wrappers for the application.
 import type { Metadata } from 'next';
 import { Outfit, DM_Sans } from 'next/font/google';
 import './globals.css';

@@ -1,3 +1,4 @@
+// This file checks and validates input data for guide validator to ensure correctness.
 /**
  * guide.validator.ts — Guide Profile request validators
  *

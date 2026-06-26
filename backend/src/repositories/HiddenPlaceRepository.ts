@@ -1,3 +1,4 @@
+// This file handles direct database queries and data access operations for hidden place repository.
 import { BaseRepository } from './BaseRepository';
 import HiddenPlace, { IHiddenPlace } from '../models/HiddenPlace';
 

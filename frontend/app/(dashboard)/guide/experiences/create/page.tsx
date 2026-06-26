@@ -1,3 +1,4 @@
+// This file renders the page screen for create in the browser.
 'use client';
 
 import { useState, useEffect } from 'react';

@@ -1,3 +1,4 @@
+// This file handles direct database queries and data access operations for user repository.
 import { BaseRepository } from './BaseRepository';
 import User, { IUser } from '../models/User';
 

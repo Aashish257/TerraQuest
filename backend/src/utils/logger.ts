@@ -1,3 +1,4 @@
+// This file provides utility helper tools like logger configuration for the backend.
 import pino from 'pino';
 import { env } from '../config/env';
 

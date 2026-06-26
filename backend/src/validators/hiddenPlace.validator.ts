@@ -1,3 +1,4 @@
+// This file checks and validates input data for hidden place validator to ensure correctness.
 import { z } from 'zod';
 
 export const createHiddenPlaceSchema = z.object({

@@ -1,3 +1,4 @@
+// This file renders the main landing page of the application.
 'use client';
 
 /**

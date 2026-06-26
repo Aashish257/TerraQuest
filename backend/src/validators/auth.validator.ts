@@ -1,3 +1,4 @@
+// This file checks and validates input data for auth validator to ensure correctness.
 /**
  * auth.validator.ts — Authentication request validators
  *

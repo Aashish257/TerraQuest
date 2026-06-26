@@ -1,3 +1,4 @@
+// This file checks and validates input data for review validator to ensure correctness.
 /**
  * review.validator.ts — Review request validator
  *

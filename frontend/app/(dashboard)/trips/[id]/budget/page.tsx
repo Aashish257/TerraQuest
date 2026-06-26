@@ -1,3 +1,4 @@
+// This file renders the page screen for budget in the browser.
 'use client';
 
 /**

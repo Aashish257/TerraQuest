@@ -1,3 +1,4 @@
+// This file defines the database structure and schema for experience records.
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IExperience extends Document {

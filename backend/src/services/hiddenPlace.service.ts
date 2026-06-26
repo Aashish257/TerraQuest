@@ -1,3 +1,4 @@
+// This file contains the main business logic and backend processes for hidden place service.
 import { hiddenPlaceRepository } from '../repositories/HiddenPlaceRepository';
 import { guideRepository } from '../repositories/GuideRepository';
 import { destinationRepository } from '../repositories/DestinationRepository';

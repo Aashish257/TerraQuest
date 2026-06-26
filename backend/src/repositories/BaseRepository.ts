@@ -1,3 +1,4 @@
+// This file handles direct database queries and data access operations for base repository.
 import { Model, Document, FilterQuery, UpdateQuery, QueryOptions } from 'mongoose';
 
 export class BaseRepository<T extends Document> {

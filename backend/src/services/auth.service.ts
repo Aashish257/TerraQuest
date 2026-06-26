@@ -1,3 +1,4 @@
+// This file contains the main business logic and backend processes for auth service.
 /**
  * auth.service.ts — Authentication and authorization service
  *

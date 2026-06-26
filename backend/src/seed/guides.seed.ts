@@ -1,3 +1,4 @@
+// This file inserts initial sample data for guides seed into the database.
 /**
  * guides.seed.ts — Guide and GuideProfile data seeder
  *

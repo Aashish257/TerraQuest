@@ -1,3 +1,4 @@
+// This file contains the main business logic and backend processes for guide request service.
 import { guideRequestRepository } from '../repositories/GuideRequestRepository';
 import { guideRepository } from '../repositories/GuideRepository';
 import { tripRepository } from '../repositories/TripRepository';

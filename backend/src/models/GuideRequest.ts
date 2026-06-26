@@ -1,3 +1,4 @@
+// This file defines the database structure and schema for guide request records.
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IGuideRequest extends Document {

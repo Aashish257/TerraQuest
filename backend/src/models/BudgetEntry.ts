@@ -1,3 +1,4 @@
+// This file defines the database structure and schema for budget entry records.
 /**
  * BudgetEntry.ts — Budget Entry Mongoose model
  *

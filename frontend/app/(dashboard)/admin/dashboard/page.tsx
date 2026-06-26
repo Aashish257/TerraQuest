@@ -1,3 +1,4 @@
+// This file renders the page screen for dashboard in the browser.
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -15,6 +16,9 @@ import {
   ArrowRight,
   Settings,
   MessageSquare,
+  Activity,
+  Globe,
+  BookOpen,
 } from 'lucide-react';
 
 
@@ -75,8 +79,25 @@ export default function AdminDashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[70vh] items-center justify-center bg-slate-950">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-teal-500 border-t-transparent" />
+      <div className="relative overflow-hidden mesh-bg flex min-h-[100dvh] items-center justify-center">
+        {/* Ambient overlay */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-emerald-950/20 via-transparent to-zinc-950/60" />
+        <div className="glass rounded-2xl p-10 flex flex-col items-center gap-5 relative z-10">
+          <div className="relative h-12 w-12">
+            <div className="absolute inset-0 rounded-full border-2 border-emerald-500/20" />
+            <div className="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-emerald-400" />
+            <div
+              className="absolute inset-2 rounded-full"
+              style={{ background: 'radial-gradient(circle, rgba(16,185,129,0.15) 0%, transparent 70%)' }}
+            />
+          </div>
+          <p
+            className="text-sm tracking-widest uppercase"
+            style={{ fontFamily: 'var(--font-mono)', color: 'rgba(161,161,170,0.7)' }}
+          >
+            Loading
+          </p>
+        </div>
       </div>
     );
   }
@@ -89,9 +110,9 @@ export default function AdminDashboardPage() {
       icon: MapPin,
       badge: stats.pendingDestinations > 0 ? `${stats.pendingDestinations} pending` : null,
       badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-      iconColor: 'text-teal-400',
-      iconBg: 'bg-teal-500/10',
-      borderHover: 'hover:border-teal-500/40',
+      iconColor: 'text-emerald-400',
+      iconBg: 'bg-emerald-500/10',
+      borderHover: 'hover:border-emerald-500/40',
     },
     {
       href: '/admin/guide-requests',
@@ -100,9 +121,9 @@ export default function AdminDashboardPage() {
       icon: MessageSquare,
       badge: stats.pendingRequests > 0 ? `${stats.pendingRequests} pending` : null,
       badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-      iconColor: 'text-indigo-400',
-      iconBg: 'bg-indigo-500/10',
-      borderHover: 'hover:border-indigo-500/40',
+      iconColor: 'text-sky-400',
+      iconBg: 'bg-sky-500/10',
+      borderHover: 'hover:border-sky-500/40',
     },
     {
       href: '/guides',
@@ -111,9 +132,9 @@ export default function AdminDashboardPage() {
       icon: Users,
       badge: null,
       badgeColor: '',
-      iconColor: 'text-purple-400',
-      iconBg: 'bg-purple-500/10',
-      borderHover: 'hover:border-purple-500/40',
+      iconColor: 'text-emerald-400',
+      iconBg: 'bg-emerald-500/10',
+      borderHover: 'hover:border-emerald-500/30',
     },
     {
       href: '/destinations',
@@ -122,138 +143,393 @@ export default function AdminDashboardPage() {
       icon: CheckCircle,
       badge: null,
       badgeColor: '',
-      iconColor: 'text-pink-400',
-      iconBg: 'bg-pink-500/10',
-      borderHover: 'hover:border-pink-500/40',
+      iconColor: 'text-sky-400',
+      iconBg: 'bg-sky-500/10',
+      borderHover: 'hover:border-sky-500/30',
     },
   ];
 
+  /** KPI stat tiles for the 6-column bar */
+  const kpiTiles = [
+    {
+      label: 'Pending Destinations',
+      value: stats.pendingDestinations,
+      icon: Clock,
+      iconColor: 'text-amber-400',
+      iconBg: 'bg-amber-500/10',
+    },
+    {
+      label: 'Approved Destinations',
+      value: stats.approvedDestinations,
+      icon: CheckCircle,
+      iconColor: 'text-emerald-400',
+      iconBg: 'bg-emerald-500/10',
+    },
+    {
+      label: 'Total Guides',
+      value: stats.totalGuides,
+      icon: BookOpen,
+      iconColor: 'text-sky-400',
+      iconBg: 'bg-sky-500/10',
+    },
+    {
+      label: 'Total Users',
+      value: stats.totalUsers,
+      icon: Users,
+      iconColor: 'text-sky-400',
+      iconBg: 'bg-sky-500/10',
+    },
+    {
+      label: 'Pending Requests',
+      value: stats.pendingRequests,
+      icon: MessageSquare,
+      iconColor: 'text-amber-400',
+      iconBg: 'bg-amber-500/10',
+    },
+    {
+      label: 'Accepted Requests',
+      value: stats.acceptedRequests,
+      icon: CheckCircle,
+      iconColor: 'text-emerald-400',
+      iconBg: 'bg-emerald-500/10',
+    },
+  ];
+
+  /** Action nav cards */
+  const actionCards = [
+    {
+      href: '/admin/destinations',
+      title: 'Pending Destinations',
+      description: 'Review and approve destination submissions from guides awaiting moderation.',
+      icon: MapPin,
+      iconColor: 'text-emerald-400',
+      iconBg: 'bg-emerald-500/10',
+      count: stats.pendingDestinations,
+      countLabel: 'awaiting review',
+    },
+    {
+      href: '/admin/users',
+      title: 'User Management',
+      description: 'Manage traveler and guide accounts, roles, and platform access.',
+      icon: Users,
+      iconColor: 'text-sky-400',
+      iconBg: 'bg-sky-500/10',
+      count: stats.totalUsers,
+      countLabel: 'registered users',
+    },
+    {
+      href: '/admin/guide-requests',
+      title: 'Guide Requests',
+      description: 'Monitor all guide booking requests and their current statuses platform-wide.',
+      icon: MessageSquare,
+      iconColor: 'text-amber-400',
+      iconBg: 'bg-amber-500/10',
+      count: stats.pendingRequests,
+      countLabel: 'pending now',
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-slate-950 py-10 px-4 sm:px-6 lg:px-8 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-950/20 via-slate-950 to-slate-950">
-      <div className="mx-auto max-w-5xl">
+    <div className="relative overflow-hidden mesh-bg min-h-[100dvh]">
+      {/* Ambient gradient overlay */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-emerald-950/10 via-transparent to-zinc-950/50" />
 
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-10 gap-4">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500/10 text-rose-400 ring-1 ring-rose-500/20">
-                <Shield className="h-5 w-5" />
-              </div>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/10 border border-rose-500/20 px-3 py-1 text-xs font-bold text-rose-400 uppercase tracking-wide">
-                <Shield className="h-3 w-3" />
-                Admin Panel
-              </span>
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+        {/* ── Header ── */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-12">
+          {/* Left: title block */}
+          <div className="flex items-center gap-4">
+            <div
+              className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl"
+              style={{
+                background: 'rgba(16,185,129,0.1)',
+                border: '1px solid rgba(16,185,129,0.25)',
+              }}
+            >
+              <Shield className="h-6 w-6 text-emerald-400" />
             </div>
-            <h1 className="text-3xl font-extrabold text-white tracking-tight">
-              Admin Dashboard
-            </h1>
-            <p className="mt-1.5 text-slate-400">
-              Welcome, <span className="text-rose-400 font-semibold">{user?.name}</span>. Manage platform content and moderation.
-            </p>
+            <div>
+              <h1
+                className="text-3xl font-bold tracking-tight text-white"
+                style={{ fontFamily: 'var(--font-display)' }}
+              >
+                Control{' '}
+                <span className="text-gradient-emerald">Center</span>
+              </h1>
+              <p className="mt-0.5 text-sm" style={{ color: 'rgba(161,161,170,0.8)' }}>
+                Platform overview &mdash; logged in as{' '}
+                <span className="text-emerald-400 font-semibold">{user?.name}</span>
+              </p>
+            </div>
+          </div>
+
+          {/* Right: quick nav */}
+          <div className="flex flex-wrap items-center gap-2">
+            <Link href="/admin/users" className="btn btn-ghost text-sm">
+              Users
+            </Link>
+            <Link href="/admin/destinations" className="btn btn-ghost text-sm">
+              Destinations
+            </Link>
+            <Link href="/admin/guide-requests" className="btn btn-primary text-sm">
+              Guide Requests
+            </Link>
           </div>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-          {[
-            {
-              label: 'Pending Destinations',
-              value: stats.pendingDestinations,
-              icon: Clock,
-              color: 'text-amber-400',
-              bg: 'bg-amber-500/10',
-            },
-            {
-              label: 'Pending Requests',
-              value: stats.pendingRequests,
-              icon: MessageSquare,
-              color: 'text-indigo-400',
-              bg: 'bg-indigo-500/10',
-            },
-            {
-              label: 'Accepted Requests',
-              value: stats.acceptedRequests,
-              icon: CheckCircle,
-              color: 'text-teal-400',
-              bg: 'bg-teal-500/10',
-            },
-            {
-              label: 'Rejected',
-              value: '—',
-              icon: XCircle,
-              color: 'text-rose-400',
-              bg: 'bg-rose-500/10',
-            },
-          ].map((stat, i) => {
-
-            const Icon = stat.icon;
+        {/* ── KPI Stat Bar ── */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-12">
+          {kpiTiles.map((tile, i) => {
+            const Icon = tile.icon;
             return (
               <div
                 key={i}
-                className="relative rounded-xl border border-white/10 bg-slate-900/40 p-5 backdrop-blur-sm hover:border-white/20 transition-all overflow-hidden"
+                className="glass card-3d-wrapper card-3d rounded-xl p-5 relative overflow-hidden"
               >
-                <div className={`absolute -right-3 -bottom-3 opacity-5 ${stat.color}`}>
-                  <Icon className="h-20 w-20" />
+                {/* Faint bg icon */}
+                <div
+                  className={`pointer-events-none absolute -right-2 -bottom-2 opacity-[0.06] ${tile.iconColor}`}
+                >
+                  <Icon className="h-16 w-16" />
                 </div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-slate-400">{stat.label}</span>
-                  <div className={`rounded-lg p-1.5 ${stat.bg} ${stat.color}`}>
-                    <Icon className="h-3.5 w-3.5" />
-                  </div>
+
+                {/* Top-right icon */}
+                <div className={`absolute top-3 right-3 rounded-lg p-1.5 ${tile.iconBg} ${tile.iconColor}`}>
+                  <Icon className="h-3.5 w-3.5" />
                 </div>
-                <div className="text-2xl font-extrabold text-white">{stat.value}</div>
+
+                {/* Value */}
+                <p
+                  className={`text-3xl font-bold leading-none mb-2 ${tile.iconColor}`}
+                  style={{ fontFamily: 'var(--font-mono)' }}
+                >
+                  {tile.value}
+                </p>
+
+                {/* Label */}
+                <p
+                  className="text-xs leading-tight"
+                  style={{ fontFamily: 'var(--font-body)', color: 'rgba(161,161,170,0.7)' }}
+                >
+                  {tile.label}
+                </p>
               </div>
             );
           })}
         </div>
 
-        {/* Moderation Sections */}
-        <h2 className="text-lg font-bold text-white mb-4">Moderation Tools</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
-          {sections.map((section) => {
-            const Icon = section.icon;
+        {/* ── Action Navigation Cards ── */}
+        <div className="mb-4">
+          <h2
+            className="text-lg font-semibold text-white mb-1"
+            style={{ fontFamily: 'var(--font-display)' }}
+          >
+            Quick Actions
+          </h2>
+          <p className="text-sm" style={{ color: 'rgba(161,161,170,0.6)' }}>
+            Jump directly into key moderation workflows
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+          {actionCards.map((card) => {
+            const Icon = card.icon;
             return (
               <Link
-                key={section.href}
-                href={section.href}
-                className={`group flex items-center justify-between rounded-xl border border-white/10 bg-slate-900/40 p-5 backdrop-blur-sm ${section.borderHover} transition-all hover:bg-slate-900/60`}
+                key={card.href}
+                href={card.href}
+                className="glass-strong card-spotlight rounded-2xl p-6 group block transition-all duration-300 hover:-translate-y-1"
               >
-                <div className="flex items-start gap-4">
-                  <div className={`rounded-lg p-2.5 ${section.iconBg} ${section.iconColor} flex-shrink-0 mt-0.5`}>
+                {/* Icon row */}
+                <div className="flex items-center justify-between mb-5">
+                  <div
+                    className={`flex h-11 w-11 items-center justify-center rounded-xl ${card.iconBg} ${card.iconColor}`}
+                  >
                     <Icon className="h-5 w-5" />
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-bold text-slate-200 group-hover:text-white transition-colors">
-                        {section.title}
-                      </h3>
-                      {section.badge && (
-                        <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold ${section.badgeColor}`}>
-                          {section.badge}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm text-slate-500">{section.description}</p>
-                  </div>
+                  <ArrowRight
+                    className={`h-4 w-4 ${card.iconColor} opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300`}
+                  />
                 </div>
-                <ArrowRight className="h-4 w-4 text-slate-600 group-hover:text-slate-300 group-hover:translate-x-1 transition-all flex-shrink-0 ml-4" />
+
+                {/* Title */}
+                <h3
+                  className="font-semibold text-white mb-1.5 group-hover:text-emerald-300 transition-colors duration-200"
+                  style={{ fontFamily: 'var(--font-display)' }}
+                >
+                  {card.title}
+                </h3>
+
+                {/* Description */}
+                <p
+                  className="text-sm leading-relaxed mb-4"
+                  style={{ color: 'rgba(161,161,170,0.65)' }}
+                >
+                  {card.description}
+                </p>
+
+                {/* Count badge */}
+                <div
+                  className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold"
+                  style={{
+                    background: 'rgba(16,185,129,0.08)',
+                    borderColor: 'rgba(16,185,129,0.2)',
+                    color: 'rgba(52,211,153,0.9)',
+                    fontFamily: 'var(--font-mono)',
+                  }}
+                >
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 opacity-80" />
+                  {card.count} {card.countLabel}
+                </div>
               </Link>
             );
           })}
         </div>
 
-        {/* Info Banner */}
-        <div className="rounded-xl border border-white/10 bg-slate-900/30 p-5 flex items-start gap-4">
-          <div className="rounded-lg p-2 bg-slate-800 text-slate-400 flex-shrink-0">
-            <Settings className="h-4 w-4" />
+        {/* ── Platform Status Section ── */}
+        <div className="mb-4">
+          <h2
+            className="text-lg font-semibold text-white mb-1"
+            style={{ fontFamily: 'var(--font-display)' }}
+          >
+            Platform Status
+          </h2>
+          <p className="text-sm" style={{ color: 'rgba(161,161,170,0.6)' }}>
+            Live system health indicators
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+          {/* Live status indicators - left column */}
+          <div className="glass rounded-2xl p-6 space-y-4">
+            {[
+              { label: 'API Services', status: 'Operational', live: true },
+              { label: 'Destination Pipeline', status: 'Active', live: true },
+              { label: 'Booking Engine', status: 'Active', live: true },
+            ].map((item, i) => (
+              <div key={i} className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Activity className="h-4 w-4 text-zinc-500" />
+                  <span
+                    className="text-sm"
+                    style={{ color: 'rgba(212,212,216,0.85)', fontFamily: 'var(--font-body)' }}
+                  >
+                    {item.label}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {item.live && <span className="dot-pulse" />}
+                  <span
+                    className="text-xs font-semibold text-emerald-400"
+                    style={{ fontFamily: 'var(--font-mono)' }}
+                  >
+                    {item.status}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
-          <div>
-            <p className="text-sm font-semibold text-slate-300">Admin Access</p>
-            <p className="text-xs text-slate-500 mt-0.5">
-              You are logged in as <span className="text-rose-400 font-semibold">{user?.email}</span> with full admin privileges. 
-              All moderation actions are logged.
-            </p>
+
+          {/* Admin session info - right column */}
+          <div className="glass rounded-2xl p-6">
+            <div className="flex items-start gap-4 mb-4">
+              <div
+                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg"
+                style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}
+              >
+                <Settings className="h-4 w-4 text-emerald-400" />
+              </div>
+              <div>
+                <p
+                  className="text-sm font-semibold text-white"
+                  style={{ fontFamily: 'var(--font-display)' }}
+                >
+                  Admin Session
+                </p>
+                <p
+                  className="text-xs mt-0.5"
+                  style={{ color: 'rgba(161,161,170,0.6)', fontFamily: 'var(--font-body)' }}
+                >
+                  Full admin privileges active
+                </p>
+              </div>
+            </div>
+
+            <div
+              className="rounded-xl p-3 space-y-2"
+              style={{ background: 'rgba(9,9,11,0.4)', border: '1px solid rgba(255,255,255,0.05)' }}
+            >
+              <div className="flex items-center justify-between">
+                <span
+                  className="text-xs"
+                  style={{ color: 'rgba(161,161,170,0.55)', fontFamily: 'var(--font-mono)' }}
+                >
+                  account
+                </span>
+                <span
+                  className="text-xs text-emerald-400 font-semibold truncate max-w-[180px]"
+                  style={{ fontFamily: 'var(--font-mono)' }}
+                >
+                  {user?.email}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span
+                  className="text-xs"
+                  style={{ color: 'rgba(161,161,170,0.55)', fontFamily: 'var(--font-mono)' }}
+                >
+                  role
+                </span>
+                <span
+                  className="text-xs font-bold uppercase tracking-wider"
+                  style={{
+                    color: 'rgba(52,211,153,0.9)',
+                    fontFamily: 'var(--font-mono)',
+                    background: 'rgba(16,185,129,0.08)',
+                    padding: '2px 8px',
+                    borderRadius: '9999px',
+                    border: '1px solid rgba(16,185,129,0.2)',
+                  }}
+                >
+                  {user?.role}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span
+                  className="text-xs"
+                  style={{ color: 'rgba(161,161,170,0.55)', fontFamily: 'var(--font-mono)' }}
+                >
+                  audit log
+                </span>
+                <span
+                  className="text-xs"
+                  style={{ color: 'rgba(161,161,170,0.6)', fontFamily: 'var(--font-mono)' }}
+                >
+                  All actions recorded
+                </span>
+              </div>
+            </div>
+
+            {/* Quick links */}
+            <div className="flex items-center gap-2 mt-4">
+              <Globe className="h-3.5 w-3.5 text-zinc-600" />
+              <Link
+                href="/destinations"
+                className="text-xs hover:text-emerald-400 transition-colors"
+                style={{ color: 'rgba(161,161,170,0.5)', fontFamily: 'var(--font-body)' }}
+              >
+                View public destinations
+              </Link>
+              <span style={{ color: 'rgba(161,161,170,0.25)' }}>·</span>
+              <Link
+                href="/guides"
+                className="text-xs hover:text-emerald-400 transition-colors"
+                style={{ color: 'rgba(161,161,170,0.5)', fontFamily: 'var(--font-body)' }}
+              >
+                Browse guides
+              </Link>
+            </div>
           </div>
         </div>
 

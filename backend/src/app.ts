@@ -37,12 +37,21 @@ const app = express();
 
 // ─── Security & Parsing Middleware ──────────────────────────────────────────
 
-// CORS: Only allow requests from the configured frontend URL
-// In production: restrict to your Vercel domain
-// In development: http://localhost:3000
+// CORS: Allow requests from the configured frontend URL and any localhost port for local development
 app.use(
   cors({
-    origin: env.FRONTEND_URL,
+    origin: (origin, callback) => {
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+      const isLocalhost = /^http:\/\/localhost:\d+$/.test(origin);
+      if (isLocalhost || origin === env.FRONTEND_URL) {
+        callback(null, true);
+      } else {
+        callback(null, false);
+      }
+    },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true, // allows cookies if needed in future

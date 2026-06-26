@@ -1,3 +1,4 @@
+// This is the starting point of the backend server that listens for network requests.
 /**
  * server.ts — HTTP Server startup
  *

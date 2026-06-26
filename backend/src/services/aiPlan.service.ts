@@ -1,3 +1,4 @@
+// This file contains the main business logic and backend processes for ai plan service.
 import { aiPlanRepository } from '../repositories/AIPlanRepository';
 import { destinationRepository } from '../repositories/DestinationRepository';
 import * as aiService from './ai.service';

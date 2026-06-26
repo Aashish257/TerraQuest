@@ -1,3 +1,4 @@
+// This file handles direct database queries and data access operations for review repository.
 import { BaseRepository } from './BaseRepository';
 import Review, { IReview } from '../models/Review';
 

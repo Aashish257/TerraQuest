@@ -1,3 +1,4 @@
+// This file defines the API routes and links endpoints to controllers for user routes.
 /**
  * user.routes.ts — User routes definition
  *

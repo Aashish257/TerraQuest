@@ -1,12 +1,5 @@
+// This file renders the page screen for trips in the browser.
 'use client';
-
-/**
- * page.tsx — My Trips Dashboard Screen
- *
- * Displays a list of user trips, filtered by category: All, Solo, and Group.
- * Shows status badges, destination targets, dates, and budget information.
- * Prominently features a CTA to generate or manually create a trip.
- */
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
@@ -39,264 +32,301 @@ export default function TripsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Initialize auth
-  useEffect(() => {
-    initialize();
-  }, [initialize]);
+  useEffect(() => { initialize(); }, [initialize]);
 
   const fetchTrips = useCallback(async () => {
-    setIsLoading(true);
-    setErrorMsg(null);
+    setIsLoading(true); setErrorMsg(null);
     try {
       const response = await api.get('/trips');
-      if (response.data.success) {
-        setTrips(response.data.trips);
-      }
+      if (response.data.success) setTrips(response.data.trips);
     } catch (err: any) {
-      console.error('Error fetching trips:', err);
-      // Redirect to login if unauthorized
-      if (err.response?.status === 401) {
-        router.push('/login');
-        return;
-      }
+      if (err.response?.status === 401) { router.push('/login'); return; }
       setErrorMsg('Could not fetch trips. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
+    } finally { setIsLoading(false); }
   }, [router]);
 
   useEffect(() => {
     if (isAuthLoading) return;
-    if (isAuthenticated) {
-      fetchTrips();
-    } else {
-      router.push('/login');
-    }
+    if (isAuthenticated) fetchTrips();
+    else router.push('/login');
   }, [isAuthenticated, fetchTrips, router, isAuthLoading]);
 
-  // Filter trips based on active tab
-  const filteredTrips = trips.filter((trip) => {
-    if (activeTab === 'all') return true;
-    return trip.tripType === activeTab;
-  });
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
-
-  const getStatusStyle = (status: string) => {
-    switch (status) {
-      case 'planning':
-        return 'bg-amber-500/10 text-amber-400 border-amber-500/25';
-      case 'ongoing':
-        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25';
-      case 'completed':
-        return 'bg-blue-500/10 text-blue-400 border-blue-500/25';
-      case 'cancelled':
-        return 'bg-rose-500/10 text-rose-400 border-rose-500/25';
-      default:
-        return 'bg-slate-500/10 text-slate-400 border-slate-500/25';
+  const filteredTrips = trips.filter(t => activeTab === 'all' ? true : t.tripType === activeTab);
+  const formatDate = (d: string) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const getStatusStyle = (s: string) => {
+    switch(s) {
+      case 'planning': return 'bg-amber-500/10 text-amber-400 border-amber-500/25';
+      case 'ongoing': return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25';
+      case 'completed': return 'bg-blue-500/10 text-blue-400 border-blue-500/25';
+      case 'cancelled': return 'bg-rose-500/10 text-rose-400 border-rose-500/25';
+      default: return 'bg-slate-500/10 text-slate-400 border-slate-500/25';
     }
   };
 
+  const getStatusDotColor = (s: string) => {
+    switch(s) {
+      case 'planning': return 'bg-amber-400';
+      case 'ongoing': return 'bg-emerald-400';
+      case 'completed': return 'bg-blue-400';
+      case 'cancelled': return 'bg-rose-400';
+      default: return 'bg-zinc-400';
+    }
+  };
+
+  const tabCounts = {
+    all: trips.length,
+    solo: trips.filter(t => t.tripType === 'solo').length,
+    group: trips.filter(t => t.tripType === 'group').length,
+  };
+
+  // --- Auth Loading State ---
   if (isAuthLoading) {
     return (
-      <div className="flex-grow flex flex-col justify-center items-center py-20 bg-slate-950/85 backdrop-blur-md">
-        <div className="relative">
-          <div className="absolute -inset-4 rounded-full bg-teal-500/20 blur-lg animate-pulse" />
-          <Loader2 className="relative h-12 w-12 text-teal-400 animate-spin" />
+      <div className="min-h-[100dvh] flex items-center justify-center" style={{ background: '#09090b' }}>
+        <div className="glass rounded-2xl p-10 flex flex-col items-center gap-5">
+          <div className="relative flex items-center justify-center w-16 h-16">
+            <span className="absolute inset-0 rounded-full border-2 border-emerald-500/30 animate-ping" />
+            <span className="absolute inset-1 rounded-full border-2 border-emerald-500/60" />
+            <Loader2 className="w-7 h-7 text-emerald-400 animate-spin relative z-10" />
+          </div>
+          <p className="text-zinc-400 text-sm tracking-widest uppercase" style={{ fontFamily: 'var(--font-mono)' }}>
+            Initializing...
+          </p>
         </div>
-        <p className="mt-6 text-sm font-semibold tracking-wide text-slate-400 animate-pulse">
-          Initializing secure session...
-        </p>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 w-full flex-grow flex flex-col justify-start">
-      
-      {/* Header Panel */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-        <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-            My Trips
-          </h1>
-          <p className="mt-2 text-sm text-slate-400">
-            Organize itineraries, budget entries, and invite friends to travel.
-          </p>
+    <div className="min-h-[100dvh] mesh-bg" style={{ background: '#09090b' }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+
+        {/* Page Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+          <div className="space-y-1">
+            <h1
+              className="text-3xl font-bold tracking-tight text-white"
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
+              My Trips
+            </h1>
+            <p className="text-sm text-zinc-400" style={{ fontFamily: 'var(--font-body)' }}>
+              Plan, explore, and track all your adventures in one place.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link href="/explore" className="btn btn-ghost flex items-center gap-2 text-sm">
+              <Compass className="w-4 h-4" />
+              Browse Spots
+            </Link>
+            <Link href="/trips/create" className="btn btn-primary flex items-center gap-2 text-sm">
+              <Plus className="w-4 h-4" />
+              Create Trip
+            </Link>
+          </div>
         </div>
 
-        {/* Action buttons */}
-        <div className="flex space-x-3">
-          <Link
-            href="/destinations"
-            className="flex items-center justify-center space-x-1.5 rounded-lg border border-slate-700 bg-slate-900 px-4 py-2.5 text-xs font-semibold text-slate-300 hover:bg-slate-800 transition-colors"
-          >
-            <Compass className="h-4 w-4" />
-            <span>Browse Spots</span>
-          </Link>
-          
-          <Link
-            href="/trips/new"
-            className="flex items-center justify-center space-x-1.5 rounded-lg bg-gradient-to-r from-teal-500 to-indigo-600 px-4 py-2.5 text-xs font-semibold text-white shadow-lg hover:from-teal-400 hover:to-indigo-500 transition-all hover:scale-[1.02]"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Create Trip</span>
-          </Link>
-        </div>
-      </div>
-
-      {/* Tabs list filter */}
-      <div className="mt-8 flex border-b border-white/10">
-        <div className="flex space-x-6">
+        {/* Tab Filters */}
+        <div className="flex items-center gap-2 flex-wrap">
           {(['all', 'solo', 'group'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`pb-4 text-sm font-semibold capitalize border-b-2 transition-all ${
-                activeTab === tab
-                  ? 'border-teal-500 text-teal-400'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                activeTab === tab ? 'tag tag-active' : 'tag'
               }`}
             >
-              {tab === 'all' ? 'All Trips' : `${tab} Trips`}
+              {tab === 'solo' && <User className="w-3.5 h-3.5" />}
+              {tab === 'group' && <Users className="w-3.5 h-3.5" />}
+              {tab === 'all' && <Sparkles className="w-3.5 h-3.5" />}
+              <span className="capitalize">{tab}</span>
+              <span
+                className="ml-1 text-xs opacity-60"
+                style={{ fontFamily: 'var(--font-mono)' }}
+              >
+                {tabCounts[tab]}
+              </span>
             </button>
           ))}
         </div>
-      </div>
 
-      {/* Trips list grid */}
-      <div className="mt-8 flex-grow flex flex-col justify-start">
-        {errorMsg ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <AlertCircle className="h-10 w-10 text-rose-500" />
-            <p className="mt-4 text-slate-300 text-sm font-semibold">{errorMsg}</p>
-          </div>
-        ) : isLoading ? (
-          /* Pulsing Card Skeletons */
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {[1, 2, 3].map((n) => (
-              <div
-                key={n}
-                className="rounded-2xl border border-white/5 bg-slate-900/40 p-6 shadow-2xl backdrop-blur-md h-48 animate-pulse flex flex-col justify-between"
-              >
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <div className="h-4 w-20 bg-slate-800 rounded animate-pulse" />
-                    <div className="h-4 w-12 bg-slate-800 rounded animate-pulse" />
-                  </div>
-                  <div className="h-6 w-3/4 bg-slate-800 rounded mt-4 animate-pulse" />
-                  <div className="h-4 w-1/2 bg-slate-800 rounded animate-pulse" />
+        {/* Loading Skeletons */}
+        {isLoading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="glass rounded-2xl p-5 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="skeleton h-5 w-20 rounded-full" />
+                  <div className="skeleton h-5 w-24 rounded-full" />
                 </div>
-                <div className="h-4 w-1/3 bg-slate-800 rounded mt-4 animate-pulse" />
-              </div>
-            ))}
-          </div>
-        ) : filteredTrips.length === 0 ? (
-          /* Empty Trips Layout */
-          <div className="flex-grow flex flex-col justify-center items-center py-20 border border-dashed border-white/5 rounded-2xl bg-slate-900/5 text-center px-4">
-            <Calendar className="h-12 w-12 text-slate-700" />
-            <h3 className="mt-4 text-lg font-bold text-white">No travel plans yet</h3>
-            <p className="mt-2 text-sm text-slate-400 max-w-sm">
-              Create a manual itinerary or explore featured destinations in India to start planning.
-            </p>
-            <div className="mt-6 flex space-x-3">
-              <Link
-                href="/trips/new"
-                className="rounded-lg bg-teal-500 px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-teal-400 transition-colors"
-              >
-                Create manual Trip
-              </Link>
-              <Link
-                href="/ai-planner"
-                className="flex items-center space-x-1.5 rounded-lg border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-slate-300 hover:bg-slate-800 transition-colors"
-              >
-                <Sparkles className="h-4 w-4 text-teal-400" />
-                <span>Plan with AI</span>
-              </Link>
-            </div>
-          </div>
-        ) : (
-          /* Active Trips Grid */
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredTrips.map((trip) => (
-              <div
-                key={trip._id}
-                className="group relative rounded-2xl border border-white/5 bg-slate-900/40 p-6 shadow-2xl backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-white/10 hover:bg-slate-900/60 flex flex-col justify-between"
-              >
-                <div>
-                  {/* Category Type Tag & Status badge */}
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center space-x-1 text-xs font-semibold text-slate-400">
-                      {trip.tripType === 'group' ? (
-                        <>
-                          <Users className="h-3.5 w-3.5 text-indigo-400" />
-                          <span>Group Trip</span>
-                        </>
-                      ) : (
-                        <>
-                          <User className="h-3.5 w-3.5 text-teal-400" />
-                          <span>Solo Trip</span>
-                        </>
-                      )}
-                    </span>
-                    <span className={`rounded-md border px-2.5 py-0.5 text-[10px] font-bold uppercase ${getStatusStyle(trip.status)}`}>
-                      {trip.status}
-                    </span>
-                  </div>
-
-                  {/* Title */}
-                  <h3 className="mt-4 text-xl font-bold text-white group-hover:text-teal-300 transition-colors">
-                    {trip.title}
-                  </h3>
-
-                  {/* Destination Info */}
-                  {trip.destinationId && (
-                    <div className="mt-2 flex items-center space-x-1 text-sm text-slate-400">
-                      <MapPin className="h-3.5 w-3.5 text-slate-500" />
-                      <span>
-                        {trip.destinationId.name}
-                        {trip.destinationId.state ? `, ${trip.destinationId.state}` : ''}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Dates */}
-                  <div className="mt-4 flex items-center space-x-2 text-xs text-slate-500">
-                    <Calendar className="h-4 w-4" />
-                    <span>
-                      {formatDate(trip.startDate)} – {formatDate(trip.endDate)}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Footer Metrics & CTA Link */}
-                <div className="mt-6 border-t border-white/5 pt-4 flex items-center justify-between">
-                  <div className="flex flex-col">
-                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Planned Budget</span>
-                    <span className="text-sm font-semibold text-slate-200">
-                      ₹{trip.budget.toLocaleString('en-IN')}
-                    </span>
-                  </div>
-
-                  <Link
-                    href={`/trips/${trip._id}`}
-                    className="rounded-lg bg-white/5 border border-white/10 px-3.5 py-1.5 text-xs font-semibold text-slate-200 hover:bg-teal-500 hover:text-slate-950 hover:border-teal-400 transition-all"
-                  >
-                    Manage Trip
-                  </Link>
+                <div className="skeleton h-6 w-3/4 rounded-lg" />
+                <div className="skeleton h-4 w-1/2 rounded-md" />
+                <div className="skeleton h-4 w-2/3 rounded-md" />
+                <div className="border-t border-white/5 pt-4 flex items-center justify-between">
+                  <div className="skeleton h-5 w-20 rounded-md" />
+                  <div className="skeleton h-5 w-16 rounded-md" />
                 </div>
               </div>
             ))}
           </div>
         )}
-      </div>
 
+        {/* Error State */}
+        {!isLoading && errorMsg && (
+          <div className="glass rounded-2xl p-8 flex flex-col items-center gap-4 text-center max-w-md mx-auto">
+            <div className="flex items-center justify-center w-14 h-14 rounded-full bg-rose-500/10 border border-rose-500/20">
+              <AlertCircle className="w-7 h-7 text-rose-400" />
+            </div>
+            <div className="space-y-1">
+              <h3
+                className="text-base font-semibold text-white"
+                style={{ fontFamily: 'var(--font-display)' }}
+              >
+                Something went wrong
+              </h3>
+              <p className="text-sm text-zinc-400">{errorMsg}</p>
+            </div>
+            <button
+              onClick={fetchTrips}
+              className="btn btn-ghost text-sm mt-1"
+            >
+              Try again
+            </button>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!isLoading && !errorMsg && filteredTrips.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-24 gap-5 text-center">
+            <Compass className="w-16 h-16 text-zinc-700" />
+            <div className="space-y-2">
+              <h3
+                className="text-xl font-semibold text-white"
+                style={{ fontFamily: 'var(--font-display)' }}
+              >
+                {activeTab === 'all' ? 'No trips yet' : `No ${activeTab} trips yet`}
+              </h3>
+              <p className="text-sm text-zinc-500 max-w-xs">
+                {activeTab === 'all'
+                  ? 'Start planning your next adventure — the world is waiting.'
+                  : `You have no ${activeTab} trips planned. Create one to get started.`}
+              </p>
+            </div>
+            <div className="flex items-center gap-3 mt-2">
+              <Link href="/explore" className="btn btn-ghost flex items-center gap-2 text-sm">
+                <Compass className="w-4 h-4" />
+                Browse Spots
+              </Link>
+              <Link href="/trips/create" className="btn btn-primary flex items-center gap-2 text-sm">
+                <Plus className="w-4 h-4" />
+                Create Trip
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Trip Cards Grid */}
+        {!isLoading && !errorMsg && filteredTrips.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredTrips.map((trip) => (
+              <div key={trip._id} className="card-3d-wrapper group">
+                <div className="card-3d glass card-spotlight rounded-2xl p-5 flex flex-col gap-4 h-full transition-all duration-300">
+
+                  {/* Top Row: type + status */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-zinc-400 text-xs font-medium">
+                      {trip.tripType === 'solo' ? (
+                        <User className="w-3.5 h-3.5 text-zinc-500" />
+                      ) : (
+                        <Users className="w-3.5 h-3.5 text-zinc-500" />
+                      )}
+                      <span className="capitalize" style={{ fontFamily: 'var(--font-body)' }}>
+                        {trip.tripType}
+                      </span>
+                    </div>
+
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusStyle(trip.status)}`}
+                      style={{ fontFamily: 'var(--font-body)' }}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full ${getStatusDotColor(trip.status)}`} />
+                      <span className="capitalize">{trip.status}</span>
+                    </span>
+                  </div>
+
+                  {/* Title */}
+                  <h2
+                    className="text-lg font-semibold text-white leading-snug transition-all duration-300 group-hover:text-gradient-emerald cursor-default"
+                    style={{ fontFamily: 'var(--font-display)' }}
+                  >
+                    {trip.title}
+                  </h2>
+
+                  {/* Destination */}
+                  {trip.destinationId && (
+                    <div className="flex items-center gap-1.5 text-zinc-400 text-sm">
+                      <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-zinc-500" />
+                      <span style={{ fontFamily: 'var(--font-body)' }}>
+                        {trip.destinationId.name}
+                        {trip.destinationId.state ? `, ${trip.destinationId.state}` : ''}
+                        {', '}
+                        {trip.destinationId.country}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Date Range */}
+                  <div className="flex items-center gap-1.5 text-zinc-400 text-sm">
+                    <Calendar className="w-3.5 h-3.5 flex-shrink-0 text-zinc-500" />
+                    <span style={{ fontFamily: 'var(--font-body)' }}>
+                      {formatDate(trip.startDate)} &mdash; {formatDate(trip.endDate)}
+                    </span>
+                  </div>
+
+                  {/* Spacer */}
+                  <div className="flex-1" />
+
+                  {/* Footer */}
+                  <div className="border-t border-white/5 pt-4 flex items-center justify-between">
+                    <div className="flex flex-col gap-0.5">
+                      <span
+                        className="text-xs text-zinc-500 uppercase tracking-wider"
+                        style={{ fontFamily: 'var(--font-body)' }}
+                      >
+                        Budget
+                      </span>
+                      <span
+                        className="text-sm font-semibold text-white"
+                        style={{ fontFamily: 'var(--font-mono)' }}
+                      >
+                        ${trip.budget.toLocaleString()}
+                      </span>
+                    </div>
+                    <Link
+                      href={`/trips/${trip._id}`}
+                      className="btn btn-ghost text-xs px-3 py-1.5 flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300"
+                    >
+                      View Trip
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-3.5 h-3.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </Link>
+                  </div>
+
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+      </div>
     </div>
   );
 }

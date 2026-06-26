@@ -1,3 +1,4 @@
+// This file contains automated tests to verify the correctness of the application code.
 /**
  * tests/integration/guide.integration.test.ts — Guide Profile API Integration Tests
  */

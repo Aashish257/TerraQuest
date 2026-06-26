@@ -1,3 +1,4 @@
+// This file defines the API routes and links endpoints to controllers for auth routes.
 /**
  * auth.routes.ts — Authentication routes definition
  *

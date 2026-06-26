@@ -1,3 +1,4 @@
+// This file contains the main business logic and backend processes for ai service.
 /**
  * ai.service.ts — AI Travel Itinerary generator service
  *

@@ -1,3 +1,4 @@
+// This file handles direct database queries and data access operations for destination repository.
 import { BaseRepository } from './BaseRepository';
 import Destination, { IDestination } from '../models/Destination';
 import { FilterQuery } from 'mongoose';

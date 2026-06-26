@@ -1,3 +1,4 @@
+// This file contains the main business logic and backend processes for guide service.
 import { guideRepository } from '../repositories/GuideRepository';
 import { userRepository } from '../repositories/UserRepository';
 import { generateToken } from './auth.service';

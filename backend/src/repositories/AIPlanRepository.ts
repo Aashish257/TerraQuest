@@ -1,3 +1,4 @@
+// This file handles direct database queries and data access operations for a i plan repository.
 import { BaseRepository } from './BaseRepository';
 import AIPlan, { IAIPlan } from '../models/AIPlan';
 
