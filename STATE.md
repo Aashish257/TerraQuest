@@ -102,6 +102,7 @@
 - [x] Upgraded backend CORS middleware to dynamically authorize localhost origin ports alongside the production FRONTEND_URL.
 - [x] Committed all frontend/backend modifications and pushed to dev branch.
 - [x] Merged dev branch into main and pushed main to GitHub.
+- [x] Created a comprehensive technical explainer and system architecture guide (EXPLANATION.md) for recruiters and interview preparation, and synced it to git.
 
 ## Active Tasks
 - None
