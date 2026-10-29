@@ -75,11 +75,14 @@ export default function Header() {
           sticky top-0 z-50 w-full
           transition-all duration-500
           ${scrolled
-            ? 'bg-[rgba(9,9,11,0.88)] backdrop-blur-2xl border-b border-white/[0.07] shadow-[0_1px_40px_rgba(0,0,0,0.5)]'
+            ? 'backdrop-blur-2xl shadow-[0_1px_40px_rgba(0,0,0,0.6)]'
             : 'bg-transparent border-b border-transparent'
           }
         `}
-        style={{ fontFamily: 'var(--font-outfit, Outfit)' }}
+        style={scrolled
+          ? { background: 'rgba(10,17,24,0.92)', borderBottom: '1px solid #27272A', fontFamily: 'var(--font-display)' }
+          : { fontFamily: 'var(--font-display)' }
+        }
       >
         <div className="mx-auto flex max-w-7xl h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
 

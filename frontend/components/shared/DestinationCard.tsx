@@ -89,14 +89,13 @@ export default function DestinationCard({ destination, index = 0 }: DestinationC
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         className="group relative rounded-2xl overflow-hidden flex flex-col h-full
-                   border border-white/[0.07] bg-[#111113]
-                   shadow-[0_4px_24px_rgba(0,0,0,0.4)]
-                   will-change-transform transition-shadow duration-500
-                   hover:shadow-[0_20px_60px_rgba(0,0,0,0.6),0_0_0_1px_rgba(16,185,129,0.15)]"
+                   border will-change-transform transition-shadow duration-500
+                   hover:shadow-[0_20px_60px_rgba(0,0,0,0.7),0_0_0_1px_rgba(16,185,129,0.12)]"
         style={{
+          background: 'radial-gradient(circle at var(--spot-x, 50%) var(--spot-y, 50%), rgba(16,185,129,0.03) 0%, transparent 60%), #0F1720',
+          borderColor: '#27272A',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
           transition: 'transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s ease',
-          // Spotlight border via CSS paint trick
-          background: 'radial-gradient(circle at var(--spot-x, 50%) var(--spot-y, 50%), rgba(16,185,129,0.04) 0%, transparent 60%), #111113',
         }}
       >
         {/* Featured badge */}
@@ -104,23 +103,23 @@ export default function DestinationCard({ destination, index = 0 }: DestinationC
           <div className="absolute top-3.5 left-3.5 z-20 flex items-center gap-1
                           px-2.5 py-1 rounded-full
                           bg-amber-400/90 backdrop-blur-sm
-                          text-[10px] font-bold text-zinc-900 tracking-wide uppercase
-                          shadow-lg">
+                          shadow-lg"
+               style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', fontWeight: 600, color: '#111', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
             <Star className="h-2.5 w-2.5 fill-current" />
             Featured
           </div>
         )}
 
         {/* ── Image ── */}
-        <div className="relative h-52 w-full overflow-hidden bg-zinc-900 flex-shrink-0">
+        <div className="relative h-56 w-full overflow-hidden flex-shrink-0" style={{ background: '#0A1118' }}>
           {imageUrl ? (
             <img
               src={imageUrl}
               alt={destination.name}
               className="w-full h-full object-cover
-                         group-hover:scale-[1.06]
+                         group-hover:scale-[1.05]
                          transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]
-                         opacity-80 group-hover:opacity-95"
+                         opacity-75 group-hover:opacity-90"
               loading="lazy"
             />
           ) : (
@@ -135,26 +134,26 @@ export default function DestinationCard({ destination, index = 0 }: DestinationC
           {/* Location overlay */}
           <div className="absolute bottom-3 left-4 right-4 flex items-center gap-1.5">
             <MapPin className="h-3 w-3 text-emerald-400 flex-shrink-0" />
-            <span className="text-xs font-semibold text-zinc-200 truncate tracking-wide">
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', fontWeight: 600, color: '#d4d4d8', letterSpacing: '0.02em' }}
+                  className="truncate">
               {destination.state ? `${destination.state}, ` : ''}{destination.country}
             </span>
           </div>
         </div>
 
         {/* ── Content body ── */}
-        <div className="flex flex-col flex-grow p-5 gap-4">
+        <div className="flex flex-col flex-grow gap-4" style={{ padding: '20px 20px 20px 20px' }}>
 
           {/* Name + description */}
           <div>
             <h3
-              className="text-lg font-bold text-zinc-50 leading-tight
-                         group-hover:text-emerald-300 transition-colors duration-300"
-              style={{ fontFamily: 'var(--font-outfit, Outfit)', letterSpacing: '-0.02em' }}
+              className="text-lg leading-tight group-hover:text-emerald-300 transition-colors duration-300"
+              style={{ fontFamily: 'var(--font-display)', fontWeight: 500, letterSpacing: '-0.015em', color: '#FFFFFF' }}
             >
               {destination.name}
             </h3>
-            <p className="mt-2 text-sm text-zinc-500 leading-relaxed line-clamp-2"
-               style={{ fontFamily: 'var(--font-dm-sans, DM Sans)' }}>
+            <p className="mt-2 text-sm leading-relaxed line-clamp-2"
+               style={{ fontFamily: 'var(--font-body)', color: '#A1A1AA' }}>
               {destination.description}
             </p>
           </div>
@@ -170,19 +169,20 @@ export default function DestinationCard({ destination, index = 0 }: DestinationC
               </span>
             ))}
             {destination.activities.length > 3 && (
-              <span className="tag text-zinc-600">
+              <span className="tag" style={{ color: '#52525B' }}>
                 +{destination.activities.length - 3}
               </span>
             )}
           </div>
 
           {/* Budget + CTA */}
-          <div className="mt-auto flex items-center justify-between pt-4 border-t border-white/[0.06]">
+          <div className="mt-auto flex items-center justify-between pt-4"
+               style={{ borderTop: '1px solid #27272A' }}>
             <div className="flex flex-col gap-0.5">
-              <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest font-mono">
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', fontWeight: 600, color: '#52525B', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                 Est. Budget
               </span>
-              <span className="text-sm font-semibold text-zinc-200 font-mono">
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', fontWeight: 600, color: '#d4d4d8' }}>
                 {destination.budgetRange
                   ? destination.budgetRange.split(' per ')[0]
                   : '—'
@@ -192,12 +192,18 @@ export default function DestinationCard({ destination, index = 0 }: DestinationC
 
             <Link
               href={`/destinations/${destination._id}`}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl
+              className="flex items-center gap-1.5 px-3.5 py-1.5
                          text-xs font-semibold text-emerald-400
-                         border border-emerald-500/25 bg-emerald-500/5
-                         hover:bg-emerald-500/15 hover:border-emerald-500/40
-                         hover:text-emerald-300 hover:shadow-[0_0_20px_rgba(16,185,129,0.15)]
+                         hover:bg-emerald-500/10 hover:text-emerald-300
+                         hover:shadow-[0_0_16px_rgba(16,185,129,0.12)]
                          transition-all duration-300"
+              style={{
+                borderRadius: 'var(--radius-control)',
+                border: '1px solid rgba(16,185,129,0.22)',
+                background: 'rgba(16,185,129,0.04)',
+                fontFamily: 'var(--font-mono)',
+                fontSize: '11px',
+              }}
             >
               <span>Explore</span>
               <TrendingUp className="h-3 w-3" />
@@ -205,11 +211,11 @@ export default function DestinationCard({ destination, index = 0 }: DestinationC
           </div>
         </div>
 
-        {/* Hover emerald bottom line (Antigravity edge accent) */}
-        <div className="absolute bottom-0 left-0 right-0 h-[1.5px]
-                        bg-gradient-to-r from-transparent via-emerald-500/60 to-transparent
+        {/* Hover emerald bottom accent line */}
+        <div className="absolute bottom-0 left-0 right-0 h-[1px]
                         opacity-0 group-hover:opacity-100
-                        transition-opacity duration-500" />
+                        transition-opacity duration-500"
+             style={{ background: 'linear-gradient(90deg, transparent, rgba(16,185,129,0.5), transparent)' }} />
       </div>
     </div>
   );

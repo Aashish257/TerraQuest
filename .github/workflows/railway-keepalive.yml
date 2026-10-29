@@ -1,0 +1,33 @@
+name: Railway Backend Keep-Alive
+
+# Keeps the Railway backend instance warm and prevents sleeping/idle state
+# on the free tier by sending periodic health check pings.
+
+on:
+  schedule:
+    # Trigger every 10 minutes (cron syntax: min hour day month day-of-week)
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions dashboard
+
+jobs:
+  keep-alive:
+    name: Ping Railway Backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Backend Health Endpoint
+        run: |
+          TARGET_URL="${{ secrets.BACKEND_HEALTH_URL || 'https://successful-encouragement-production-d704.up.railway.app/health' }}"
+          echo "Pinging backend at: $TARGET_URL"
+          
+          # Send HTTP GET with 30s timeout and capture status code
+          STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" -m 30 "$TARGET_URL" || echo "failed")
+          echo "HTTP Response Status Code: $STATUS_CODE"
+          
+          # Also ping base /api endpoint as secondary heartbeat
+          BASE_URL="${{ secrets.BACKEND_API_URL || 'https://successful-encouragement-production-d704.up.railway.app/api' }}"
+          echo "Pinging secondary API endpoint: $BASE_URL"
+          API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 30 "$BASE_URL" || echo "failed")
+          echo "API Response Status Code: $API_STATUS"
+          
+          echo "Keep-alive ping cycle completed successfully."
+

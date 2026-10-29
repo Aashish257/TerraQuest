@@ -347,36 +347,38 @@ export default function LandingPage() {
     destinations.find((d) => d._id === selectedDestId)?.name ?? 'Your Destination';
 
   return (
-    <div className="relative flex flex-col bg-[#09090b]">
+    <div className="relative flex flex-col" style={{ background: '#0A1118' }}>
 
       {/* ═══════════════════════════════════════
           HERO SECTION
-          Scroll Experience: full-viewport hook section
-          Antigravity: asymmetric split layout, floating widget
+          Nature's Hideaways: dashboard-like hierarchy,
+          dense composition, Inter 500 display type
       ═══════════════════════════════════════ */}
       <section
         className="relative min-h-[100dvh] flex items-center overflow-hidden"
-        style={{ fontFamily: 'var(--font-outfit, Outfit)' }}
+        style={{ fontFamily: 'var(--font-display)' }}
       >
         {/* WebGL particle canvas (ThreeJS Immersive Web skill) */}
         <ParticleCanvas />
 
-        {/* Mesh gradient orbs — CSS fallback / layered with particles */}
+        {/* Mesh gradient orbs */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
           <div className="absolute top-[-15%] left-[-10%] w-[700px] h-[700px] rounded-full
-                          bg-emerald-500/[0.06] blur-[120px] animate-mesh-drift" />
+                          animate-mesh-drift"
+               style={{ background: 'rgba(16,185,129,0.05)', filter: 'blur(120px)' }} />
           <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full
-                          bg-emerald-700/[0.08] blur-[100px] animate-[mesh-drift_14s_ease-in-out_-7s_infinite]" />
-          <div className="absolute top-[40%] right-[20%] w-[300px] h-[300px] rounded-full
-                          bg-amber-500/[0.03] blur-[80px] animate-float-slow" />
+                          animate-[mesh-drift_14s_ease-in-out_-7s_infinite]"
+               style={{ background: 'rgba(16,185,129,0.06)', filter: 'blur(100px)' }} />
+          <div className="absolute top-[40%] right-[20%] w-[300px] h-[300px] rounded-full animate-float-slow"
+               style={{ background: 'rgba(245,158,11,0.02)', filter: 'blur(80px)' }} />
         </div>
 
-        {/* Background image overlay — subtle texture */}
+        {/* Background image overlay */}
         <div
-          className="absolute inset-0 opacity-[0.06] bg-cover bg-center pointer-events-none"
+          className="absolute inset-0 opacity-[0.05] bg-cover bg-center pointer-events-none"
           style={{ backgroundImage: "url('https://picsum.photos/seed/india-landscape/1800/900')" }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#09090b]/20 via-transparent to-[#09090b]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0A1118]/20 via-transparent to-[#0A1118]" />
 
         {/* ── Content ── */}
         <div className="relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8
@@ -385,29 +387,29 @@ export default function LandingPage() {
           {/* Left: Headline + CTAs */}
           <div className="flex flex-col gap-7 animate-fade-up">
 
-            {/* Status pill */}
-            <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full w-fit
-                            border border-emerald-500/20 bg-emerald-500/5">
+            {/* Status pill — JetBrains Mono label per spec */}
+            <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 w-fit"
+                 style={{ borderRadius: '9999px', border: '1px solid rgba(16,185,129,0.2)', background: 'rgba(16,185,129,0.05)' }}>
               <div className="dot-pulse" />
-              <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-[0.12em]">
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', fontWeight: 600, color: '#34d399', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
                 AI Travel Intelligence
               </span>
             </div>
 
-            {/* Headline — AIDA: Attention */}
+            {/* Headline — Inter 500, 64px per Nature's Hideaways display-lg spec */}
             <h1
-              className="text-5xl sm:text-6xl lg:text-[68px] font-extrabold leading-[1.0] tracking-[-0.04em] text-zinc-50"
-              style={{ fontFamily: 'var(--font-outfit, Outfit)' }}
+              className="text-[60px] sm:text-[68px] lg:text-[72px] leading-[1.04] tracking-[-0.02em]"
+              style={{ fontFamily: 'var(--font-display)', fontWeight: 500, color: '#FFFFFF' }}
             >
               Stop planning.
               <br />
               <span className="text-gradient-emerald">Start exploring.</span>
             </h1>
 
-            {/* Subhead — AIDA: Interest */}
+            {/* Subhead */}
             <p
-              className="text-lg text-zinc-400 leading-relaxed max-w-[480px]"
-              style={{ fontFamily: 'var(--font-dm-sans, DM Sans)' }}
+              className="text-lg leading-relaxed max-w-[480px]"
+              style={{ fontFamily: 'var(--font-body)', color: '#A1A1AA' }}
             >
               TerraQuest builds complete, budget-aware itineraries in seconds
               — then connects you with guides who&apos;ve walked every trail.
@@ -434,48 +436,54 @@ export default function LandingPage() {
               </Link>
             </div>
 
-            {/* Trust strip */}
-            <div className="flex items-center gap-5 mt-1">
+            {/* Trust strip — bento row with separators per Nature's Hideaways density */}
+            <div className="flex items-center gap-0 mt-1 rounded-lg overflow-hidden"
+                 style={{ border: '1px solid #27272A', background: '#0F1720' }}>
               {[
                 { value: '12,400+', label: 'Travellers' },
                 { value: '520',     label: 'Guides'     },
                 { value: '98.3%',   label: 'Satisfaction'},
               ].map((s, i) => (
-                <div key={i} className="flex flex-col gap-0.5">
-                  <span className="text-base font-bold text-zinc-200 font-mono">{s.value}</span>
-                  <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest">{s.label}</span>
+                <div key={i} className="flex flex-col gap-0.5 px-4 py-2.5"
+                     style={{ borderRight: i < 2 ? '1px solid #27272A' : 'none' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', fontWeight: 600, color: '#FFFFFF' }}>{s.value}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', fontWeight: 600, color: '#52525B', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{s.label}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Right: AI Builder Widget (Antigravity floating glass card) */}
+          {/* Right: AI Builder Widget */}
           <div
-            className="glass-md rounded-2xl p-6 relative overflow-hidden
+            className="rounded-2xl p-6 relative overflow-hidden
                        animate-fade-up [animation-delay:120ms]
                        lg:rotate-[0.8deg] hover:rotate-0 transition-[transform] duration-500"
-            style={{ boxShadow: '0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(16,185,129,0.08)' }}
+            style={{
+              background: '#0F1720',
+              border: '1px solid #27272A',
+              boxShadow: '0 40px 100px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)',
+            }}
           >
             {/* Inner shimmer top border */}
             <div
               className="absolute inset-x-0 top-0 h-px"
-              style={{ background: 'linear-gradient(90deg, transparent, rgba(16,185,129,0.5), transparent)' }}
+              style={{ background: 'linear-gradient(90deg, transparent, rgba(16,185,129,0.4), transparent)' }}
             />
 
             {/* Widget header */}
-            <div className="flex items-center gap-3 mb-5 pb-4 border-b border-white/[0.06]">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20
-                              flex items-center justify-center">
-                <Sparkles className="h-4.5 w-4.5 text-emerald-400 animate-float" />
+            <div className="flex items-center gap-3 mb-5 pb-4" style={{ borderBottom: '1px solid #27272A' }}>
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center"
+                   style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.18)' }}>
+                <Sparkles className="h-4 w-4 text-emerald-400 animate-float" />
               </div>
               <div>
                 <h3
-                  className="text-sm font-bold text-zinc-100"
-                  style={{ fontFamily: 'var(--font-outfit, Outfit)', letterSpacing: '-0.01em' }}
+                  className="text-sm font-semibold"
+                  style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.01em', color: '#FFFFFF' }}
                 >
                   AI Itinerary Builder
                 </h3>
-                <p className="text-[10px] text-zinc-500 font-mono">TerraQuest Engine v2</p>
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: '#52525B' }}>TerraQuest Engine v2</p>
               </div>
               <div className="ml-auto flex gap-1">
                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-dot-pulse" />
