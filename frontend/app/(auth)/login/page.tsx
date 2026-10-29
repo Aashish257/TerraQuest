@@ -88,7 +88,13 @@ function LoginForm() {
       const { token, user } = response.data;
       loginStore(user, token);
       const redirect = searchParams.get('redirect');
-      if (redirect)                  router.push(redirect);
+      if (redirect) {
+        if (user.role === 'traveler' && (redirect.startsWith('/guide') || redirect === '/become-guide')) {
+          router.push('/destinations');
+        } else {
+          router.push(redirect);
+        }
+      }
       else if (user.role === 'guide') router.push('/guide/dashboard');
       else if (user.role === 'admin') router.push('/admin/dashboard');
       else                            router.push('/destinations');

@@ -31,8 +31,8 @@ const BUDGETS    = [
 /* Skeleton card loader — matches card proportions */
 function SkeletonCard() {
   return (
-    <div className="rounded-2xl border border-white/[0.05] bg-[#111113] overflow-hidden flex flex-col">
-      <div className="skeleton h-52 w-full" />
+    <div className="rounded-2xl overflow-hidden flex flex-col" style={{ border: '1px solid #27272A', background: '#0F1720' }}>
+      <div className="skeleton h-56 w-full" />
       <div className="p-5 flex flex-col gap-3">
         <div className="skeleton h-4 w-3/4 rounded" />
         <div className="skeleton h-3 w-full rounded" />
@@ -42,9 +42,9 @@ function SkeletonCard() {
           <div className="skeleton h-5 w-16 rounded-md" />
           <div className="skeleton h-5 w-12 rounded-md" />
         </div>
-        <div className="flex justify-between items-center mt-4 pt-4 border-t border-white/[0.04]">
+        <div className="flex justify-between items-center mt-4 pt-4" style={{ borderTop: '1px solid #27272A' }}>
           <div className="skeleton h-8 w-20 rounded" />
-          <div className="skeleton h-8 w-24 rounded-xl" />
+          <div className="skeleton h-8 w-24 rounded" />
         </div>
       </div>
     </div>
@@ -160,46 +160,51 @@ export default function DestinationsPage() {
   const hasFilters = search || selectedActivity || selectedBudget;
 
   return (
-    <div className="flex flex-col min-h-[100dvh] bg-[#09090b]">
+    <div className="flex flex-col min-h-[100dvh]" style={{ background: '#0A1118' }}>
 
       {/* ── Hero Banner ── */}
       <div
-        className="relative overflow-hidden border-b border-white/[0.05] px-4 sm:px-6 lg:px-8 py-16"
-        style={{ background: 'radial-gradient(ellipse at top left, rgba(16,185,129,0.06) 0%, transparent 60%)' }}
+        className="relative overflow-hidden px-4 sm:px-6 lg:px-8 py-16"
+        style={{
+          borderBottom: '1px solid #27272A',
+          background: 'radial-gradient(ellipse at top left, rgba(16,185,129,0.05) 0%, transparent 55%)',
+        }}
       >
         {/* Decorative orbs */}
-        <div className="absolute -top-20 -left-20 w-64 h-64 rounded-full bg-emerald-500/5 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-20 right-10 w-80 h-80 rounded-full bg-emerald-700/5 blur-3xl pointer-events-none" />
+        <div className="absolute -top-20 -left-20 w-64 h-64 rounded-full pointer-events-none"
+             style={{ background: 'rgba(16,185,129,0.04)', filter: 'blur(80px)' }} />
+        <div className="absolute -bottom-20 right-10 w-80 h-80 rounded-full pointer-events-none"
+             style={{ background: 'rgba(16,185,129,0.03)', filter: 'blur(80px)' }} />
 
         <div className="relative max-w-7xl mx-auto">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20
-                            bg-emerald-500/5 px-3.5 py-1.5 mb-5">
+            <div className="inline-flex items-center gap-2 mb-5"
+                 style={{ borderRadius: '9999px', border: '1px solid rgba(16,185,129,0.2)', background: 'rgba(16,185,129,0.05)', padding: '6px 14px' }}>
               <Compass className="h-3 w-3 text-emerald-400" />
-              <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-widest">
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', fontWeight: 600, color: '#34d399', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                 Explore India
               </span>
             </div>
 
             <h1
-              className="text-5xl sm:text-6xl font-extrabold tracking-[-0.04em] leading-[1.0] text-zinc-50"
-              style={{ fontFamily: 'var(--font-outfit, Outfit)' }}
+              className="text-6xl sm:text-7xl tracking-[-0.03em] leading-[1.0]"
+              style={{ fontFamily: 'var(--font-display)', fontWeight: 500, color: '#FFFFFF' }}
             >
               Discover
               <span className="text-gradient-emerald"> hidden gems</span>
             </h1>
 
             <p
-              className="mt-4 text-base text-zinc-500 leading-relaxed max-w-lg"
-              style={{ fontFamily: 'var(--font-dm-sans, DM Sans)' }}
+              className="mt-5 text-base leading-relaxed max-w-lg"
+              style={{ fontFamily: 'var(--font-body)', color: '#A1A1AA' }}
             >
               From sun-drenched beaches to mist-draped mountain trails — explore
               curated destinations and guide-discovered secret spots across India.
             </p>
 
             {!isLoading && totalRecords > 0 && (
-              <p className="mt-3 text-sm font-mono text-zinc-600">
-                <span className="text-emerald-500 font-bold">{totalRecords}</span>
+              <p className="mt-3" style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: '#52525B' }}>
+                <span style={{ color: '#10b981', fontWeight: 700 }}>{totalRecords}</span>
                 {' '}destinations available
               </p>
             )}
@@ -209,8 +214,8 @@ export default function DestinationsPage() {
 
       {/* ── Sticky Filter Bar ── */}
       <div
-        className="sticky top-16 z-30 border-b border-white/[0.05]
-                   bg-[rgba(9,9,11,0.92)] backdrop-blur-xl px-4 sm:px-6 lg:px-8 py-3"
+        className="sticky top-16 z-30 px-4 sm:px-6 lg:px-8 py-3"
+        style={{ borderBottom: '1px solid #27272A', background: 'rgba(10,17,24,0.96)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}
       >
         <div className="max-w-7xl mx-auto flex flex-wrap items-center gap-2">
 
@@ -224,11 +229,17 @@ export default function DestinationsPage() {
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               placeholder="Search destinations..."
-              className="w-full h-9 pl-9 pr-4 bg-[#111113] border border-white/[0.07] rounded-lg
-                         text-sm text-zinc-200 placeholder:text-zinc-700
-                         focus:outline-none focus:border-emerald-500/40 focus:ring-1 focus:ring-emerald-500/20
-                         transition-all duration-200"
-              style={{ fontFamily: 'var(--font-dm-sans, DM Sans)' }}
+              className="w-full h-9 pl-9 pr-4 text-sm placeholder:text-zinc-700
+                         focus:outline-none transition-all duration-200"
+              style={{
+                background: '#0F1720',
+                border: '1px solid #27272A',
+                borderRadius: 'var(--radius-control)',
+                color: '#e4e4e7',
+                fontFamily: 'var(--font-body)',
+              }}
+              onFocus={e => { e.target.style.borderColor = 'rgba(16,185,129,0.4)'; e.target.style.boxShadow = '0 0 0 2px rgba(16,185,129,0.1)'; }}
+              onBlur={e => { e.target.style.borderColor = '#27272A'; e.target.style.boxShadow = 'none'; }}
             />
             {search && (
               <button
@@ -241,7 +252,7 @@ export default function DestinationsPage() {
           </div>
 
           {/* Divider */}
-          <div className="h-6 w-px bg-white/[0.07] hidden sm:block" />
+          <div className="h-6 w-px hidden sm:block" style={{ background: '#27272A' }} />
 
           {/* Activity pill filters */}
           <div className="flex items-center gap-1.5 flex-wrap">
@@ -262,10 +273,14 @@ export default function DestinationsPage() {
             id="destination-budget"
             value={selectedBudget}
             onChange={(e) => { setSelectedBudget(e.target.value); setPage(1); }}
-            className="h-9 px-3 bg-[#111113] border border-white/[0.07] rounded-lg
-                       text-xs text-zinc-300 focus:outline-none focus:border-emerald-500/40
-                       transition-all duration-200 min-w-[160px] cursor-pointer"
-            style={{ fontFamily: 'var(--font-dm-sans, DM Sans)' }}
+            className="h-9 px-3 text-xs focus:outline-none transition-all duration-200 min-w-[160px] cursor-pointer"
+            style={{
+              background: '#0F1720',
+              border: '1px solid #27272A',
+              borderRadius: 'var(--radius-control)',
+              color: '#d4d4d8',
+              fontFamily: 'var(--font-body)',
+            }}
           >
             {BUDGETS.map((b) => (
               <option key={b.value} value={b.value}>{b.label}</option>
@@ -276,9 +291,9 @@ export default function DestinationsPage() {
           {hasFilters && (
             <button
               onClick={handleReset}
-              className="flex items-center gap-1.5 h-9 px-3 rounded-lg
-                         border border-rose-500/20 text-rose-400 text-xs font-semibold
+              className="flex items-center gap-1.5 h-9 px-3 text-rose-400 text-xs font-semibold
                          hover:bg-rose-500/10 transition-all duration-200 shrink-0"
+              style={{ borderRadius: 'var(--radius-control)', border: '1px solid rgba(244,63,94,0.2)' }}
             >
               <X className="h-3 w-3" />
               Clear
@@ -292,9 +307,9 @@ export default function DestinationsPage() {
 
         {/* Result count */}
         {!isLoading && !errorMsg && destinations.length > 0 && (
-          <p className="text-[11px] font-bold text-zinc-600 uppercase tracking-widest mb-6 font-mono">
+          <p className="mb-6" style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', fontWeight: 600, color: '#52525B', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             Showing {destinations.length} of {totalRecords} results
-            {hasFilters && <span className="text-emerald-600 ml-2">— filtered</span>}
+            {hasFilters && <span style={{ color: '#10b981', marginLeft: '8px' }}>— filtered</span>}
           </p>
         )}
 
