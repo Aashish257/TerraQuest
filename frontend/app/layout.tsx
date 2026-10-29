@@ -4,6 +4,7 @@ import { Outfit, DM_Sans } from 'next/font/google';
 import './globals.css';
 import Header from '@/components/layouts/Header';
 import Footer from '@/components/layouts/Footer';
+import BackendKeepAlive from '@/components/shared/BackendKeepAlive';
 
 const outfit = Outfit({
   subsets: ['latin'],
@@ -42,6 +43,7 @@ export default function RootLayout({
         style={{ fontFamily: 'var(--font-dm-sans, DM Sans), system-ui, sans-serif' }}
         className="flex flex-col min-h-[100dvh] bg-[#09090b] text-zinc-100 antialiased"
       >
+        <BackendKeepAlive />
         <Header />
         <main className="flex-grow flex flex-col">
           {children}
